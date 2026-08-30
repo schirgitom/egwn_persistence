@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EGWNPersistence.Application/EGWNPersistence.Application.csproj" />
+    <Project Path="src/EGWNPersistence.Domain/EGWNPersistence.Domain.csproj" />
+    <Project Path="src/EGWNPersistence.Infrastructure/EGWNPersistence.Infrastructure.csproj" />
+    <Project Path="src/EGWNPersistence.Worker/EGWNPersistence.Worker.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/EGWNPersistence.Tests/EGWNPersistence.Tests.csproj" />
+  </Folder>
+</Solution>
