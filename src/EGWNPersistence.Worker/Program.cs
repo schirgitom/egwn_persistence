@@ -1,6 +1,9 @@
 using EGWNPersistence.Application;
 using EGWNPersistence.Infrastructure;
 using EGWNPersistence.Infrastructure.Configuration;
+using EGWNPersistence.Infrastructure.Persistence;
+using EGWNPersistence.Worker.Configuration;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using RabbitMQ.Client;
 using Serilog;
@@ -11,7 +14,7 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("RabbitMQ", LogEventLevel.Warning)
     .Enrich.FromLogContext()
     .WriteTo.Console(outputTemplate:
-        "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+        "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
     .CreateBootstrapLogger();
 
 try
@@ -20,12 +23,22 @@ try
 
     var builder = Host.CreateApplicationBuilder(args);
 
-    // Serilog
+    builder.Configuration
+        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+        .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+        .AddEnvironmentVariables();
+
+    var consulAddress = builder.Configuration["Consul:Address"];
+    var consulKeyPrefix = builder.Configuration["Consul:KeyPrefix"] ?? "egwn/persistence";
+    if (!string.IsNullOrWhiteSpace(consulAddress))
+    {
+        builder.Configuration.AddConsul(consulAddress, consulKeyPrefix);
+    }
+
     builder.Services.AddSerilog((services, lc) => lc
         .ReadFrom.Configuration(builder.Configuration)
         .ReadFrom.Services(services)
-        .Enrich.FromLogContext()
-        .WriteTo.Console(new Serilog.Formatting.Json.JsonFormatter()));
+        .Enrich.FromLogContext());
 
     // Application + Infrastructure layers
     builder.Services.AddApplication();
@@ -63,6 +76,15 @@ try
             tags: ["messaging", "rabbitmq"]);
 
     var host = builder.Build();
+
+    await using (var scope = host.Services.CreateAsyncScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<EGWNPersistenceDbContext>();
+        Log.Information("Applying EF Core migrations at startup");
+        await dbContext.Database.MigrateAsync();
+        Log.Information("EF Core migrations applied successfully");
+    }
+
     await host.RunAsync();
 }
 catch (Exception ex) when (ex is not HostAbortedException)

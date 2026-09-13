@@ -8,17 +8,24 @@ namespace EGWNPersistence.Application;
 /// </summary>
 public static class MeasurementMapper
 {
-    public static IngestMeasurementsCommand ToCommand(MeasurementMessageDto dto)
+    public static IngestMeasurementsCommand ToCommand(MeterReadingMessageDto dto)
     {
-        var entries = dto.Measurements
-            .Select(m => new MeasurementEntry(
-                m.Timestamp,
-                m.TotalConsumption,
-                m.GridShare,
-                m.CommunityShare,
-                m.GridSharePercent,
-                m.CommunitySharePercent,
-                m.Source))
+        var entries = dto.Readings
+            .Select(m =>
+            {
+                var total = m.TotalConsumptionValue;
+                var gridPercent = total == 0 ? 0m : m.GridShareValue / total;
+                var communityPercent = total == 0 ? 0m : m.CommunityShareValue / total;
+
+                return new MeasurementEntry(
+                    m.Timestamp,
+                    total,
+                    m.GridShareValue,
+                    m.CommunityShareValue,
+                    gridPercent,
+                    communityPercent,
+                    "EDA");
+            })
             .ToList();
 
         return new IngestMeasurementsCommand(dto.MeterPointNumber, entries);

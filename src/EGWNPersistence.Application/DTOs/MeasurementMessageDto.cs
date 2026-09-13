@@ -3,37 +3,34 @@ using System.Text.Json.Serialization;
 namespace EGWNPersistence.Application.DTOs;
 
 /// <summary>
-/// Represents the RabbitMQ message payload for EDA meter measurements.
+/// Represents the RabbitMQ measurement payload from the EDA meter reading feed.
 /// </summary>
-public sealed class MeasurementMessageDto
+public sealed class MeterReadingMessageDto
 {
-    [JsonPropertyName("MeterPointNumber")]
+    [JsonPropertyName("meterPointNumber")]
     public string MeterPointNumber { get; init; } = string.Empty;
 
-    [JsonPropertyName("Measurements")]
-    public List<MeasurementEntryDto> Measurements { get; init; } = [];
+    [JsonPropertyName("communityId")]
+    public string CommunityId { get; init; } = string.Empty;
+
+    [JsonPropertyName("createdAtUtc")]
+    public DateTimeOffset CreatedAtUtc { get; init; }
+
+    [JsonPropertyName("readings")]
+    public List<MeterReadingEntryDto> Readings { get; init; } = [];
 }
 
-public sealed class MeasurementEntryDto
+public sealed class MeterReadingEntryDto
 {
-    [JsonPropertyName("Timestamp")]
+    [JsonPropertyName("timestamp")]
     public DateTimeOffset Timestamp { get; init; }
 
-    [JsonPropertyName("TotalConsumption")]
-    public decimal TotalConsumption { get; init; }
+    [JsonPropertyName("totalConsumptionValue")]
+    public decimal TotalConsumptionValue { get; init; }
 
-    [JsonPropertyName("GridShare")]
-    public decimal GridShare { get; init; }
+    [JsonPropertyName("gridShareValue")]
+    public decimal GridShareValue { get; init; }
 
-    [JsonPropertyName("CommunityShare")]
-    public decimal CommunityShare { get; init; }
-
-    [JsonPropertyName("GridSharePercent")]
-    public decimal GridSharePercent { get; init; }
-
-    [JsonPropertyName("CommunitySharePercent")]
-    public decimal CommunitySharePercent { get; init; }
-
-    [JsonPropertyName("Source")]
-    public string Source { get; init; } = string.Empty;
+    [JsonPropertyName("communityShareValue")]
+    public decimal CommunityShareValue { get; init; }
 }

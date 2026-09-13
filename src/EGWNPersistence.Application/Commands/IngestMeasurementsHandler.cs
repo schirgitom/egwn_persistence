@@ -1,16 +1,21 @@
+using EGWNPersistence.Application.Configuration;
 using EGWNPersistence.Domain.Aggregates;
 using EGWNPersistence.Domain.Entities;
 using EGWNPersistence.Domain.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace EGWNPersistence.Application.Commands;
 
 public sealed class IngestMeasurementsHandler(
     IUnitOfWork unitOfWork,
-    ILogger<IngestMeasurementsHandler> logger)
+    ILogger<IngestMeasurementsHandler> logger,
+    IOptions<MeasurementCorrectionOptions> correctionOptions)
     : IRequestHandler<IngestMeasurementsCommand, IngestMeasurementsResult>
 {
+    private readonly TimeSpan _correctionWindow = correctionOptions.Value.ToTimeSpan();
+
     public async Task<IngestMeasurementsResult> Handle(
         IngestMeasurementsCommand request,
         CancellationToken cancellationToken)
@@ -27,6 +32,14 @@ public sealed class IngestMeasurementsHandler(
             {
                 meterPoint = MeterPoint.Create(request.MeterPointNumber);
                 await unitOfWork.MeterPoints.AddAsync(meterPoint, cancellationToken);
+                await unitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (meterPoint.Id <= 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Failed to persist MeterPoint '{request.MeterPointNumber}'. Generated meter ID is invalid: {meterPoint.Id}.");
+                }
+
                 logger.LogInformation(
                     "Created new MeterPoint {MeterPointNumber} with Id {MeterPointId}",
                     request.MeterPointNumber, meterPoint.Id);
@@ -38,31 +51,68 @@ public sealed class IngestMeasurementsHandler(
                     request.MeterPointNumber, meterPoint.Id);
             }
 
-            // Idempotency: find timestamps already persisted
+            if (meterPoint.Id <= 0)
+            {
+                throw new InvalidOperationException(
+                    $"MeterPoint '{request.MeterPointNumber}' has invalid ID {meterPoint.Id}. Aborting measurement write.");
+            }
+
             var incomingTimestamps = request.Measurements
                 .Select(m => m.Timestamp.ToUniversalTime())
                 .ToList();
 
-            var existingTimestamps = await unitOfWork.Measurements
-                .GetExistingTimestampsAsync(meterPoint.Id, incomingTimestamps, cancellationToken);
+            var existingMeasurements = await unitOfWork.Measurements
+                .GetExistingAsync(meterPoint.Id, incomingTimestamps, cancellationToken);
 
-            // Build new measurements, skipping already-existing ones
-            var newMeasurements = request.Measurements
-                .Where(m => !existingTimestamps.Contains(m.Timestamp.ToUniversalTime()))
-                .Select(m => MeterMeasurement.Create(
+            var newMeasurements = new List<MeterMeasurement>();
+            var correctedMeasurements = new List<MeterMeasurement>();
+            var skipped = 0;
+            var utcNow = DateTimeOffset.UtcNow;
+
+            foreach (var entry in request.Measurements)
+            {
+                var timestampUtc = entry.Timestamp.ToUniversalTime();
+                if (existingMeasurements.TryGetValue(timestampUtc, out var existingMeasurement))
+                {
+                    if (existingMeasurement.CanBeCorrected(utcNow, _correctionWindow))
+                    {
+                        existingMeasurement.ApplyCorrection(
+                            entry.TotalConsumption,
+                            entry.GridShare,
+                            entry.CommunityShare,
+                            entry.GridSharePercent,
+                            entry.CommunitySharePercent,
+                            entry.Source,
+                            utcNow,
+                            utcNow,
+                            _correctionWindow);
+                        correctedMeasurements.Add(existingMeasurement);
+                        continue;
+                    }
+
+                    skipped++;
+                    continue;
+                }
+
+                newMeasurements.Add(MeterMeasurement.Create(
                     meterPoint.Id,
-                    m.Timestamp,
-                    m.TotalConsumption,
-                    m.GridShare,
-                    m.CommunityShare,
-                    m.GridSharePercent,
-                    m.CommunitySharePercent,
-                    m.Source))
-                .ToList();
+                    entry.Timestamp,
+                    entry.TotalConsumption,
+                    entry.GridShare,
+                    entry.CommunityShare,
+                    entry.GridSharePercent,
+                    entry.CommunitySharePercent,
+                    entry.Source));
+            }
 
             if (newMeasurements.Count > 0)
             {
                 await unitOfWork.Measurements.BulkInsertAsync(newMeasurements, cancellationToken);
+            }
+
+            if (correctedMeasurements.Count > 0)
+            {
+                await unitOfWork.Measurements.UpdateAsync(correctedMeasurements, cancellationToken);
             }
 
             await unitOfWork.CommitAsync(cancellationToken);
@@ -71,11 +121,11 @@ public sealed class IngestMeasurementsHandler(
                 meterPoint.Id,
                 request.Measurements.Count,
                 newMeasurements.Count,
-                existingTimestamps.Count);
+                request.Measurements.Count - newMeasurements.Count);
 
             logger.LogInformation(
-                "Ingested measurements for {MeterPointNumber}: {Inserted} inserted, {Skipped} skipped",
-                request.MeterPointNumber, result.Inserted, result.Skipped);
+                "Ingested measurements for {MeterPointNumber}: {Inserted} inserted, {Corrected} corrected, {Skipped} skipped",
+                request.MeterPointNumber, result.Inserted, correctedMeasurements.Count, result.Skipped);
 
             return result;
         }

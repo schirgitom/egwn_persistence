@@ -11,7 +11,7 @@ public sealed class MeterPointTests
     {
         var mp = MeterPoint.Create("AT001234567890");
 
-        mp.Id.Should().NotBe(Guid.Empty);
+        mp.Id.Should().Be(0);
         mp.MeterPointNumber.Should().Be("AT001234567890");
         mp.CreatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
         mp.UpdatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
@@ -37,7 +37,7 @@ public sealed class MeterPointTests
     [Fact]
     public void Reconstitute_RestoresAllProperties()
     {
-        var id = Guid.NewGuid();
+        const long id = 42L;
         var created = DateTimeOffset.UtcNow.AddDays(-10);
         var updated = DateTimeOffset.UtcNow.AddDays(-5);
 
@@ -55,12 +55,11 @@ public sealed class MeterMeasurementTests
     [Fact]
     public void Create_WithValidData_SetsAllProperties()
     {
-        var mpId = Guid.NewGuid();
+        const long mpId = 7L;
         var ts = new DateTimeOffset(2024, 1, 15, 8, 0, 0, TimeSpan.Zero);
 
         var m = MeterMeasurement.Create(mpId, ts, 1.234m, 0.5m, 0.734m, 0.4053m, 0.5947m, "EDA");
 
-        m.Id.Should().NotBe(Guid.Empty);
         m.MeterPointId.Should().Be(mpId);
         m.Timestamp.Should().Be(ts.ToUniversalTime());
         m.TotalConsumption.Should().Be(1.234m);
@@ -71,12 +70,13 @@ public sealed class MeterMeasurementTests
         m.Source.Should().Be("EDA");
         m.CreatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
         m.IngestedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
+        m.UpdatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
     }
 
     [Fact]
     public void Create_ConvertsTimestampToUtc()
     {
-        var mpId = Guid.NewGuid();
+        const long mpId = 9L;
         var localTs = new DateTimeOffset(2024, 1, 15, 10, 0, 0, TimeSpan.FromHours(2)); // CET+2
 
         var m = MeterMeasurement.Create(mpId, localTs, 1.0m, 0.5m, 0.5m, 0.5m, 0.5m, "EDA");
@@ -91,14 +91,34 @@ public sealed class MeterMeasurementTests
     [InlineData(null)]
     public void Create_WithEmptySource_Throws(string? source)
     {
-        var act = () => MeterMeasurement.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, 1m, 0.5m, 0.5m, 0.5m, 0.5m, source!);
+        var act = () => MeterMeasurement.Create(11L, DateTimeOffset.UtcNow, 1m, 0.5m, 0.5m, 0.5m, 0.5m, source!);
         act.Should().Throw<ArgumentException>();
     }
 
     [Fact]
     public void Create_TrimsSource()
     {
-        var m = MeterMeasurement.Create(Guid.NewGuid(), DateTimeOffset.UtcNow, 1m, 0.5m, 0.5m, 0.5m, 0.5m, "  EDA  ");
+        var m = MeterMeasurement.Create(12L, DateTimeOffset.UtcNow, 1m, 0.5m, 0.5m, 0.5m, 0.5m, "  EDA  ");
         m.Source.Should().Be("EDA");
+    }
+
+    [Fact]
+    public void CanBeCorrected_WithinThreeWeeks_ReturnsTrue()
+    {
+        var ts = DateTimeOffset.UtcNow.AddDays(-10);
+        var m = MeterMeasurement.Create(13L, ts, 1m, 0.5m, 0.5m, 0.5m, 0.5m, "EDA");
+
+        m.CanBeCorrected(DateTimeOffset.UtcNow).Should().BeTrue();
+    }
+
+    [Fact]
+    public void ApplyCorrection_OutsideCorrectionWindow_Throws()
+    {
+        var ts = DateTimeOffset.UtcNow.AddDays(-30);
+        var m = MeterMeasurement.Create(14L, ts, 1m, 0.5m, 0.5m, 0.5m, 0.5m, "EDA");
+
+        var act = () => m.ApplyCorrection(2m, 1m, 1m, 0.4m, 0.6m, "EDA", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+
+        act.Should().Throw<InvalidOperationException>();
     }
 }

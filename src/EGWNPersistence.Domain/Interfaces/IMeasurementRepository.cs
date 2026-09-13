@@ -5,16 +5,21 @@ namespace EGWNPersistence.Domain.Interfaces;
 public interface IMeasurementRepository
 {
     /// <summary>
-    /// Returns the set of timestamps (UTC) that already exist for the given meter point.
-    /// Used for idempotency filtering before bulk insert.
+    /// Returns the measurements that already exist for the given meter point and timestamps.
+    /// Used for idempotency and correction-window checks.
     /// </summary>
-    Task<IReadOnlySet<DateTimeOffset>> GetExistingTimestampsAsync(
-        Guid meterPointId,
+    Task<IReadOnlyDictionary<DateTimeOffset, MeterMeasurement>> GetExistingAsync(
+        long meterPointId,
         IEnumerable<DateTimeOffset> timestamps,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Bulk-inserts measurements. Silently skips duplicates (ON CONFLICT DO NOTHING).
+    /// Bulk-inserts new measurements.
     /// </summary>
     Task BulkInsertAsync(IEnumerable<MeterMeasurement> measurements, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates existing measurement rows when a new value arrives within the correction window.
+    /// </summary>
+    Task UpdateAsync(IEnumerable<MeterMeasurement> measurements, CancellationToken cancellationToken = default);
 }

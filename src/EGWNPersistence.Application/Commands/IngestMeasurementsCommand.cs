@@ -19,7 +19,7 @@ public sealed record MeasurementEntry(
     string Source);
 
 public sealed record IngestMeasurementsResult(
-    Guid MeterPointId,
+    long MeterPointId,
     int TotalReceived,
     int Inserted,
     int Skipped);

@@ -16,6 +16,9 @@ public sealed class RabbitMqOptions
     public string VirtualHost { get; init; } = "/";
     public string Username { get; init; } = "guest";
     public string Password { get; init; } = "guest";
+    public string Exchange { get; init; } = "eda.sync";
+    public string ExchangeType { get; init; } = "topic";
+    public string RoutingKey { get; init; } = "eda.sync.result";
     public string QueueName { get; init; } = "egwn.measurements";
     public string DeadLetterExchange { get; init; } = "egwn.dlx";
     public string DeadLetterQueue { get; init; } = "egwn.measurements.dlq";

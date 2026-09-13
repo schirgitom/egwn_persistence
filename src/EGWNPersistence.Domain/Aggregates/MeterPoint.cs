@@ -7,7 +7,7 @@ public class MeterPoint
 {
     private MeterPoint() { }
 
-    public Guid Id { get; private set; }
+    public long Id { get; private set; }
     public string MeterPointNumber { get; private set; } = string.Empty;
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
@@ -18,7 +18,7 @@ public class MeterPoint
 
         return new MeterPoint
         {
-            Id = Guid.NewGuid(),
+            Id = 0,
             MeterPointNumber = meterPointNumber.Trim(),
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow
@@ -26,7 +26,7 @@ public class MeterPoint
     }
 
     /// <summary>Reconstitutes a MeterPoint from the database (for repository use only).</summary>
-    public static MeterPoint Reconstitute(Guid id, string meterPointNumber, DateTimeOffset createdAt, DateTimeOffset updatedAt)
+    public static MeterPoint Reconstitute(long id, string meterPointNumber, DateTimeOffset createdAt, DateTimeOffset updatedAt)
     {
         return new MeterPoint
         {

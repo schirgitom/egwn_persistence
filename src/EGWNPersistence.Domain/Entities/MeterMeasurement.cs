@@ -2,14 +2,16 @@ namespace EGWNPersistence.Domain.Entities;
 
 /// <summary>
 /// Represents a single hourly energy measurement for a meter point.
-/// This entity is append-only — never updated after creation.
+/// Raw values are mutable during the correction window (three weeks after the timestamp),
+/// after which they are treated as fixed historical data.
 /// </summary>
 public class MeterMeasurement
 {
+    public static readonly TimeSpan CorrectionWindow = TimeSpan.FromDays(21);
+
     private MeterMeasurement() { }
 
-    public Guid Id { get; private set; }
-    public Guid MeterPointId { get; private set; }
+    public long MeterPointId { get; private set; }
 
     /// <summary>Start of the measurement period (always UTC, hourly granularity).</summary>
     public DateTimeOffset Timestamp { get; private set; }
@@ -35,11 +37,50 @@ public class MeterMeasurement
     /// <summary>Server-side timestamp when this record was ingested.</summary>
     public DateTimeOffset IngestedAt { get; private set; }
 
-    /// <summary>Server-side creation timestamp (immutable).</summary>
+    /// <summary>Server-side creation timestamp.</summary>
     public DateTimeOffset CreatedAt { get; private set; }
 
+    /// <summary>Last update timestamp. Allows corrections during the configurable correction window.</summary>
+    public DateTimeOffset UpdatedAt { get; private set; }
+
+    public bool CanBeCorrected(DateTimeOffset now, TimeSpan? correctionWindow = null)
+    {
+        var currentUtc = now.ToUniversalTime();
+        var timestampUtc = Timestamp.ToUniversalTime();
+        var effectiveWindow = correctionWindow ?? CorrectionWindow;
+        return currentUtc >= timestampUtc && currentUtc - timestampUtc <= effectiveWindow;
+    }
+
+    public void ApplyCorrection(
+        decimal totalConsumption,
+        decimal gridShare,
+        decimal communityShare,
+        decimal gridSharePercent,
+        decimal communitySharePercent,
+        string source,
+        DateTimeOffset ingestedAt,
+        DateTimeOffset now,
+        TimeSpan? correctionWindow = null)
+    {
+        if (!CanBeCorrected(now, correctionWindow))
+        {
+            throw new InvalidOperationException("This measurement is outside the correction window and cannot be updated.");
+        }
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(source);
+
+        TotalConsumption = totalConsumption;
+        GridShare = gridShare;
+        CommunityShare = communityShare;
+        GridSharePercent = gridSharePercent;
+        CommunitySharePercent = communitySharePercent;
+        Source = source.Trim();
+        IngestedAt = ingestedAt.ToUniversalTime();
+        UpdatedAt = now.ToUniversalTime();
+    }
+
     public static MeterMeasurement Create(
-        Guid meterPointId,
+        long meterPointId,
         DateTimeOffset timestamp,
         decimal totalConsumption,
         decimal gridShare,
@@ -53,7 +94,6 @@ public class MeterMeasurement
         var now = DateTimeOffset.UtcNow;
         return new MeterMeasurement
         {
-            Id = Guid.NewGuid(),
             MeterPointId = meterPointId,
             Timestamp = timestamp.ToUniversalTime(),
             TotalConsumption = totalConsumption,
@@ -63,14 +103,14 @@ public class MeterMeasurement
             CommunitySharePercent = communitySharePercent,
             Source = source.Trim(),
             IngestedAt = now,
-            CreatedAt = now
+            CreatedAt = now,
+            UpdatedAt = now
         };
     }
 
     /// <summary>Reconstitutes a measurement from the database (for repository use only).</summary>
     public static MeterMeasurement Reconstitute(
-        Guid id,
-        Guid meterPointId,
+        long meterPointId,
         DateTimeOffset timestamp,
         decimal totalConsumption,
         decimal gridShare,
@@ -79,11 +119,11 @@ public class MeterMeasurement
         decimal communitySharePercent,
         string source,
         DateTimeOffset ingestedAt,
-        DateTimeOffset createdAt)
+        DateTimeOffset createdAt,
+        DateTimeOffset updatedAt)
     {
         return new MeterMeasurement
         {
-            Id = id,
             MeterPointId = meterPointId,
             Timestamp = timestamp,
             TotalConsumption = totalConsumption,
@@ -93,7 +133,8 @@ public class MeterMeasurement
             CommunitySharePercent = communitySharePercent,
             Source = source,
             IngestedAt = ingestedAt,
-            CreatedAt = createdAt
+            CreatedAt = createdAt,
+            UpdatedAt = updatedAt
         };
     }
 }

@@ -10,6 +10,7 @@ public interface IUnitOfWork : IAsyncDisposable
     IMeasurementRepository Measurements { get; }
 
     Task BeginAsync(CancellationToken cancellationToken = default);
+    Task SaveChangesAsync(CancellationToken cancellationToken = default);
     Task CommitAsync(CancellationToken cancellationToken = default);
     Task RollbackAsync(CancellationToken cancellationToken = default);
 }

@@ -75,6 +75,12 @@ public sealed class MeasurementConsumer : BackgroundService
             routingKey: string.Empty,
             cancellationToken: cancellationToken);
 
+        await _channel.ExchangeDeclareAsync(
+            _options.Exchange,
+            _options.ExchangeType,
+            durable: true,
+            cancellationToken: cancellationToken);
+
         // Declare main queue with DLX routing
         await _channel.QueueDeclareAsync(
             _options.QueueName,
@@ -85,6 +91,12 @@ public sealed class MeasurementConsumer : BackgroundService
             {
                 ["x-dead-letter-exchange"] = _options.DeadLetterExchange
             },
+            cancellationToken: cancellationToken);
+
+        await _channel.QueueBindAsync(
+            _options.QueueName,
+            _options.Exchange,
+            _options.RoutingKey,
             cancellationToken: cancellationToken);
 
         await _channel.BasicQosAsync(0, _options.PrefetchCount, false, cancellationToken);
@@ -99,8 +111,8 @@ public sealed class MeasurementConsumer : BackgroundService
             cancellationToken: cancellationToken);
 
         _logger.LogInformation(
-            "RabbitMQ consumer started. Listening on queue '{Queue}' at {Host}:{Port}",
-            _options.QueueName, _options.Host, _options.Port);
+            "RabbitMQ consumer started. Queue '{Queue}' bound to exchange '{Exchange}' ({ExchangeType}) with routing key '{RoutingKey}' at {Host}:{Port}",
+            _options.QueueName, _options.Exchange, _options.ExchangeType, _options.RoutingKey, _options.Host, _options.Port);
     }
 
     private async Task HandleMessageAsync(object sender, BasicDeliverEventArgs args)
@@ -111,7 +123,10 @@ public sealed class MeasurementConsumer : BackgroundService
         try
         {
             var body = Encoding.UTF8.GetString(args.Body.Span);
-            var dto = JsonSerializer.Deserialize<MeasurementMessageDto>(body);
+            var dto = JsonSerializer.Deserialize<MeterReadingMessageDto>(body, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
 
             if (dto is null)
             {
@@ -123,7 +138,7 @@ public sealed class MeasurementConsumer : BackgroundService
             meterPointNumber = dto.MeterPointNumber;
             _logger.LogDebug(
                 "Received measurement message for {MeterPointNumber} with {Count} entries",
-                meterPointNumber, dto.Measurements.Count);
+                meterPointNumber, dto.Readings.Count);
 
             var command = MeasurementMapper.ToCommand(dto);
 
