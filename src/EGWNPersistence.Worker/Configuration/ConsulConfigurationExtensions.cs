@@ -38,36 +38,14 @@ public sealed class ConsulConfigurationProvider(string address, string keyPrefix
 
         try
         {
-            var entries = client.KV.List(keyPrefix.Trim('/')).GetAwaiter().GetResult();
-            var pairs = entries.Response ?? [];
-
-            foreach (var pair in pairs)
+            var result = client.KV.Get(keyPrefix.Trim('/')).GetAwaiter().GetResult();
+            if (result.Response?.Value is { } raw)
             {
-                var key = pair.Key ?? string.Empty;
-                if (string.IsNullOrWhiteSpace(key) || key == keyPrefix.Trim('/'))
-                    continue;
-
-                var cleanKey = key.Trim('/');
-                var prefix = keyPrefix.Trim('/');
-                if (cleanKey.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                {
-                    cleanKey = cleanKey[prefix.Length..].Trim('/');
-                }
-
-                if (string.IsNullOrWhiteSpace(cleanKey))
-                    continue;
-
-                cleanKey = cleanKey.Replace('/', ':');
-                cleanKey = cleanKey.Replace('\\', ':');
-
-                var value = pair.Value is null ? string.Empty : Encoding.UTF8.GetString(pair.Value);
+                var value = Encoding.UTF8.GetString(raw);
                 if (TryParseJsonObject(value, out var json))
                 {
-                    AddJsonSection(cleanKey, json);
-                    continue;
+                    AddJsonSection(string.Empty, json);
                 }
-
-                Data[cleanKey] = value;
             }
         }
         catch (Exception)

@@ -29,7 +29,7 @@ try
         .AddEnvironmentVariables();
 
     var consulAddress = builder.Configuration["Consul:Address"];
-    var consulKeyPrefix = builder.Configuration["Consul:KeyPrefix"] ?? "egwn/persistence";
+    var consulKeyPrefix = builder.Configuration["Consul:KeyPrefix"] ?? "egwnpersistence/appsettings";
     if (!string.IsNullOrWhiteSpace(consulAddress))
     {
         builder.Configuration.AddConsul(consulAddress, consulKeyPrefix);

@@ -1,0 +1,17 @@
+name: egwnpersistence
+services:
+  egwnpersistence-worker:
+    container_name: egwnpersistence-worker
+    image: thomasschirgi/egwnpersistenceworker:latest
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      Consul__Address: "http://egwn-consul:8500"
+      Consul__KeyPrefix: "egwnpersistence/appsettings"
+    networks:
+      - egwn-network
+    restart: unless-stopped
+
+networks:
+  egwn-network:
+    external: true
+    name: egwn-network
