@@ -1,0 +1,433 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Detailansicht der Zählpunkte (meter_points): Verbrauch, Netzanteil vs. Energiegemeinschaft-Anteil, Lastprofile und Datenqualität aus raw_measurements.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": ["egwn"],
+      "targetBlank": false,
+      "title": "EGWN Dashboards",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Σ Gesamtverbrauch",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 4, "w": 5, "x": 0, "y": 0 },
+      "options": {
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "kwatth",
+          "decimals": 1,
+          "color": { "mode": "fixed", "fixedColor": "purple" }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroup(rm.timestamp, '1d') AS time,\n       SUM(rm.total_consumption) AS \"Verbrauch\"\nFROM raw_measurements rm\nJOIN meter_points mp ON mp.\"Id\" = rm.meter_id\nWHERE $__timeFilter(rm.timestamp)\n  AND mp.meter_point_number IN ($meterPoint)\nGROUP BY 1\nORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Σ Netzbezug",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 4, "w": 5, "x": 5, "y": 0 },
+      "options": {
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "kwatth",
+          "decimals": 1,
+          "color": { "mode": "fixed", "fixedColor": "red" }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroup(rm.timestamp, '1d') AS time,\n       SUM(rm.grid_share) AS \"Netz\"\nFROM raw_measurements rm\nJOIN meter_points mp ON mp.\"Id\" = rm.meter_id\nWHERE $__timeFilter(rm.timestamp)\n  AND mp.meter_point_number IN ($meterPoint)\nGROUP BY 1\nORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Σ Energiegemeinschaft-Anteil",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 4, "w": 5, "x": 10, "y": 0 },
+      "options": {
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "kwatth",
+          "decimals": 1,
+          "color": { "mode": "fixed", "fixedColor": "green" }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroup(rm.timestamp, '1d') AS time,\n       SUM(rm.community_share) AS \"Energiegemeinschaft\"\nFROM raw_measurements rm\nJOIN meter_points mp ON mp.\"Id\" = rm.meter_id\nWHERE $__timeFilter(rm.timestamp)\n  AND mp.meter_point_number IN ($meterPoint)\nGROUP BY 1\nORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Ø Energiegemeinschaft-Quote",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 4, "w": 5, "x": 15, "y": 0 },
+      "options": {
+        "reduceOptions": { "calcs": ["mean"], "fields": "", "values": false },
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0.2 },
+              { "color": "yellow", "value": 0.4 },
+              { "color": "green", "value": 0.6 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroup(rm.timestamp, '1d') AS time,\n       SUM(rm.community_share) / NULLIF(SUM(rm.total_consumption), 0) AS \"Energiegemeinschaft %\"\nFROM raw_measurements rm\nJOIN meter_points mp ON mp.\"Id\" = rm.meter_id\nWHERE $__timeFilter(rm.timestamp)\n  AND mp.meter_point_number IN ($meterPoint)\nGROUP BY 1\nORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Aktive Zählpunkte",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 0 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "graphMode": "none",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": { "mode": "fixed", "fixedColor": "blue" }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(DISTINCT rm.meter_id) AS \"Zählpunkte\"\nFROM raw_measurements rm\nJOIN meter_points mp ON mp.\"Id\" = rm.meter_id\nWHERE $__timeFilter(rm.timestamp)\n  AND mp.meter_point_number IN ($meterPoint)"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Verbrauch – Netz vs. Energiegemeinschaft (gestapelt)",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "kwatth",
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 0,
+            "fillOpacity": 90,
+            "stacking": { "mode": "normal", "group": "A" },
+            "showPoints": "never",
+            "barAlignment": 0
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Netz" },      "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] },
+          { "matcher": { "id": "byName", "options": "Energiegemeinschaft" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["sum"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroupAlias(rm.timestamp, $__interval),\n       SUM(rm.grid_share)      AS \"Netz\",\n       SUM(rm.community_share) AS \"Energiegemeinschaft\"\nFROM raw_measurements rm\nJOIN meter_points mp ON mp.\"Id\" = rm.meter_id\nWHERE $__timeFilter(rm.timestamp)\n  AND mp.meter_point_number IN ($meterPoint)\nGROUP BY 1\nORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Energiegemeinschaft-Anteil in %",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "showPoints": "auto",
+            "spanNulls": false
+          },
+          "color": { "mode": "fixed", "fixedColor": "green" }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroupAlias(rm.timestamp, $__interval),\n       SUM(rm.community_share) / NULLIF(SUM(rm.total_consumption), 0) AS \"Energiegemeinschaft %\"\nFROM raw_measurements rm\nJOIN meter_points mp ON mp.\"Id\" = rm.meter_id\nWHERE $__timeFilter(rm.timestamp)\n  AND mp.meter_point_number IN ($meterPoint)\nGROUP BY 1\nORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "barchart",
+      "title": "Ø Tages-Lastprofil (Stunde des Tages)",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 13 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "kwatth",
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 90,
+            "gradientMode": "none",
+            "axisPlacement": "auto",
+            "axisLabel": "kWh"
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Netz" },      "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] },
+          { "matcher": { "id": "byName", "options": "Energiegemeinschaft" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] }
+        ]
+      },
+      "options": {
+        "orientation": "vertical",
+        "stacking": "normal",
+        "showValue": "never",
+        "groupWidth": 0.9,
+        "barWidth": 0.9,
+        "xTickLabelRotation": 0,
+        "xField": "Stunde",
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["max", "mean"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT LPAD(EXTRACT(HOUR FROM rm.timestamp)::text, 2, '0') || ':00' AS \"Stunde\",\n       AVG(rm.grid_share)      AS \"Netz\",\n       AVG(rm.community_share) AS \"Energiegemeinschaft\"\nFROM raw_measurements rm\nJOIN meter_points mp ON mp.\"Id\" = rm.meter_id\nWHERE $__timeFilter(rm.timestamp)\n  AND mp.meter_point_number IN ($meterPoint)\nGROUP BY 1\nORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "heatmap",
+      "title": "Verbrauchs-Heatmap – Σ kWh je Stunde × Tag (alle gewählten Zählpunkte)",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 13 },
+      "options": {
+        "calculate": false,
+        "cellGap": 1,
+        "color": { "scheme": "Turbo", "mode": "scheme", "steps": 64, "reverse": false },
+        "yAxis": { "axisLabel": "Stunde (0-23)", "unit": "short", "decimals": 0 },
+        "cellValues": { "unit": "kwatth", "decimals": 2 },
+        "legend": { "show": true },
+        "exemplars": { "color": "rgba(255,0,255,0.7)" },
+        "tooltip": { "show": true, "yHistogram": false, "showColorScale": true }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "kwatth",
+          "decimals": 2,
+          "custom": { "scaleDistribution": { "type": "linear" }, "hideFrom": { "tooltip": false, "viz": false, "legend": false } }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT date_trunc('day', rm.timestamp) AS \"time\",\n       EXTRACT(HOUR FROM rm.timestamp)::text AS metric,\n       SUM(rm.total_consumption) AS value\nFROM raw_measurements rm\nJOIN meter_points mp ON mp.\"Id\" = rm.meter_id\nWHERE $__timeFilter(rm.timestamp)\n  AND mp.meter_point_number IN ($meterPoint)\nGROUP BY 1, 2\nORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "table",
+      "title": "Datenqualität – letzter Datenpunkt & Anzahl je Zählpunkt",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 22 },
+      "options": { "showHeader": true, "footer": { "show": false } },
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto" } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Alter (h)" },
+            "properties": [
+              { "id": "unit", "value": "h" },
+              { "id": "decimals", "value": 1 },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "orange", "value": 2 },
+                    { "color": "red", "value": 6 }
+                  ]
+                }
+              },
+              { "id": "custom.displayMode", "value": "color-background" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Verbrauch" },
+            "properties": [
+              { "id": "unit", "value": "kwatth" },
+              { "id": "decimals", "value": 1 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Energiegemeinschaft %" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "decimals", "value": 1 }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT mp.meter_point_number             AS \"Zählpunkt\",\n       COUNT(*)                           AS \"Datensätze\",\n       SUM(rm.total_consumption)          AS \"Verbrauch\",\n       SUM(rm.community_share) / NULLIF(SUM(rm.total_consumption), 0) AS \"Energiegemeinschaft %\",\n       MAX(rm.timestamp)                  AS \"Letzter Datensatz\",\n       EXTRACT(EPOCH FROM (NOW() - MAX(rm.timestamp)))/3600 AS \"Alter (h)\"\nFROM raw_measurements rm\nJOIN meter_points mp ON mp.\"Id\" = rm.meter_id\nWHERE $__timeFilter(rm.timestamp)\n  AND mp.meter_point_number IN ($meterPoint)\nGROUP BY mp.meter_point_number\nORDER BY \"Alter (h)\" DESC"
+        }
+      ]
+    }
+  ],
+  "refresh": "5m",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["egwn", "meterpoints", "measurements"],
+  "templating": {
+    "list": [
+      {
+        "name": "DS_TIMESCALE",
+        "label": "Datasource",
+        "type": "datasource",
+        "query": "postgres",
+        "current": {},
+        "hide": 0,
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false
+      },
+      {
+        "name": "meterPoint",
+        "label": "Zählpunkt",
+        "type": "query",
+        "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+        "definition": "SELECT meter_point_number FROM meter_points ORDER BY meter_point_number",
+        "query": "SELECT meter_point_number FROM meter_points ORDER BY meter_point_number",
+        "includeAll": true,
+        "multi": true,
+        "refresh": 2,
+        "sort": 1,
+        "current": { "selected": true, "text": ["All"], "value": ["$__all"] }
+      }
+    ]
+  },
+  "time": { "from": "now-7d", "to": "now" },
+  "timepicker": {
+    "refresh_intervals": ["30s", "1m", "5m", "15m", "30m", "1h", "6h", "12h", "1d"]
+  },
+  "timezone": "Europe/Vienna",
+  "title": "EGWN – Meterpoint Details",
+  "uid": "egwn-meterpoint-details",
+  "version": 1,
+  "weekStart": "monday"
+}

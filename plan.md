@@ -16,6 +16,8 @@
 - The default window is 21 days and can be overridden via the `MeasurementCorrection:CorrectionWindowDays` configuration value.
 - The RabbitMQ payload now matches the EDA JSON format with `meterPointNumber`, `communityId`, `createdAtUtc`, and `readings` arrays.
 - A dedicated `kpi_measurements` table and `KpiMeasurement` entity were added for KPI time-series storage.
+- KPI ingestion is community-scoped: `kpi_measurements` PK is `(community_id, timestamp)`; value columns are nullable to allow partial payloads.
+- KPI messages are consumed from a dedicated RabbitMQ queue (`egwn.kpis`, routing key `eda.sync.kpi`) by `KpiConsumer`. Incoming `(community_id, timestamp)` combinations are upserted (last write wins).
 
 ## Next steps
 - Keep EF model and SQL migration files aligned.

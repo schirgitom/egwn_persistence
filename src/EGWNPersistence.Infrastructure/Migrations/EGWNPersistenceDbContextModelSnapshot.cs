@@ -54,33 +54,28 @@ namespace EGWNPersistence.Infrastructure.Migrations
 
             modelBuilder.Entity("EGWNPersistence.Domain.Entities.KpiMeasurement", b =>
                 {
-                    b.Property<long>("MeterPointId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("meter_id");
+                    b.Property<string>("CommunityId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("community_id");
 
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamptz")
                         .HasColumnName("timestamp");
 
-                    b.Property<decimal>("Autarky")
+                    b.Property<decimal?>("Autarky")
                         .HasColumnType("numeric(18,6)")
                         .HasColumnName("autarky");
 
-                    b.Property<decimal>("Community")
+                    b.Property<decimal?>("Community")
                         .HasColumnType("numeric(18,6)")
                         .HasColumnName("community");
-
-                    b.Property<string>("CommunityId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("community_id");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamptz")
                         .HasColumnName("created_at");
 
-                    b.Property<decimal>("Feed")
+                    b.Property<decimal?>("Feed")
                         .HasColumnType("numeric(18,6)")
                         .HasColumnName("feed");
 
@@ -88,11 +83,11 @@ namespace EGWNPersistence.Infrastructure.Migrations
                         .HasColumnType("timestamptz")
                         .HasColumnName("ingested_at");
 
-                    b.Property<decimal>("OwnConsumption")
+                    b.Property<decimal?>("OwnConsumption")
                         .HasColumnType("numeric(18,6)")
                         .HasColumnName("own_consumption");
 
-                    b.Property<decimal>("RemainingDemand")
+                    b.Property<decimal?>("RemainingDemand")
                         .HasColumnType("numeric(18,6)")
                         .HasColumnName("remaining_demand");
 
@@ -100,12 +95,9 @@ namespace EGWNPersistence.Infrastructure.Migrations
                         .HasColumnType("timestamptz")
                         .HasColumnName("updated_at");
 
-                    b.HasKey("MeterPointId", "Timestamp");
+                    b.HasKey("CommunityId", "Timestamp");
 
                     b.HasIndex("Timestamp");
-
-                    b.HasIndex("MeterPointId", "Timestamp")
-                        .IsUnique();
 
                     b.ToTable("kpi_measurements", (string)null);
                 });

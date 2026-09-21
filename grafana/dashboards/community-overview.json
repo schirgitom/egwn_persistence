@@ -1,0 +1,421 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Übersicht der Energiegemeinschaft-KPIs (Autarkie, Eigenverbrauch, Energiegemeinschaft-Energie, Einspeisung, Reststrombezug) aus der Tabelle kpi_measurements.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Autarkiegrad Ø",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 5, "w": 5, "x": 0, "y": 0 },
+      "options": {
+        "reduceOptions": { "calcs": ["mean"], "fields": "", "values": false },
+        "graphMode": "area",
+        "colorMode": "value",
+        "textMode": "auto",
+        "orientation": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "min": 0, "max": 100,
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 30 },
+              { "color": "yellow", "value": 50 },
+              { "color": "green", "value": 70 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroup(timestamp, '1d') AS time,\n       AVG(autarky) AS \"Autarkie\"\nFROM kpi_measurements\nWHERE $__timeFilter(timestamp)\n  AND community_id IN ($community)\nGROUP BY 1\nORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Eigenverbrauchsquote Ø",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 5, "w": 5, "x": 5, "y": 0 },
+      "options": {
+        "reduceOptions": { "calcs": ["mean"], "fields": "", "values": false },
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "min": 0, "max": 100,
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 30 },
+              { "color": "yellow", "value": 50 },
+              { "color": "green", "value": 70 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroup(timestamp, '1d') AS time,\n       AVG(own_consumption) AS \"Eigenverbrauch\"\nFROM kpi_measurements\nWHERE $__timeFilter(timestamp)\n  AND community_id IN ($community)\nGROUP BY 1\nORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Energiegemeinschaft-Energie",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 5, "w": 5, "x": 10, "y": 0 },
+      "options": {
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "kwatth",
+          "decimals": 1,
+          "color": { "mode": "fixed", "fixedColor": "green" }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroup(timestamp, '1d') AS time,\n       SUM(community) AS \"Energiegemeinschaft\"\nFROM kpi_measurements\nWHERE $__timeFilter(timestamp)\n  AND community_id IN ($community)\nGROUP BY 1\nORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Einspeisung",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 5, "w": 5, "x": 15, "y": 0 },
+      "options": {
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "kwatth",
+          "decimals": 1,
+          "color": { "mode": "fixed", "fixedColor": "blue" }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroup(timestamp, '1d') AS time,\n       SUM(feed) AS \"Feed\"\nFROM kpi_measurements\nWHERE $__timeFilter(timestamp)\n  AND community_id IN ($community)\nGROUP BY 1\nORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Reststrombezug",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 5, "w": 4, "x": 20, "y": 0 },
+      "options": {
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "graphMode": "area",
+        "colorMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "kwatth",
+          "decimals": 1,
+          "color": { "mode": "fixed", "fixedColor": "red" }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroup(timestamp, '1d') AS time,\n       SUM(remaining_demand) AS \"Rest\"\nFROM kpi_measurements\nWHERE $__timeFilter(timestamp)\n  AND community_id IN ($community)\nGROUP BY 1\nORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Autarkie & Eigenverbrauch – Verlauf",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 5 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "min": 0, "max": 100,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["mean", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroupAlias(timestamp, '1d'),\n       AVG(autarky) AS \"Autarkie\",\n       AVG(own_consumption) AS \"Eigenverbrauch\"\nFROM kpi_measurements\nWHERE $__timeFilter(timestamp)\n  AND community_id IN ($community)\nGROUP BY 1\nORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "barchart",
+      "title": "Energiebilanz – gestapelt (kWh/Tag)",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 5 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "kwatth",
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 90
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Energiegemeinschaft" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] },
+          { "matcher": { "id": "byName", "options": "Einspeisung" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+          { "matcher": { "id": "byName", "options": "Reststrom" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] }
+        ]
+      },
+      "options": {
+        "orientation": "vertical",
+        "stacking": "normal",
+        "showValue": "never",
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["sum"] },
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "xTickLabelRotation": -45
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT $__timeGroup(timestamp, '1d') AS \"time\",\n       SUM(community)         AS \"Energiegemeinschaft\",\n       SUM(feed)              AS \"Einspeisung\",\n       SUM(remaining_demand)  AS \"Reststrom\"\nFROM kpi_measurements\nWHERE $__timeFilter(timestamp)\n  AND community_id IN ($community)\nGROUP BY 1\nORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "piechart",
+      "title": "Verhältnis Energiegemeinschaft / Einspeisung / Rest",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 9, "w": 8, "x": 0, "y": 14 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "kwatth",
+          "custom": { "hideFrom": { "tooltip": false, "viz": false, "legend": false } }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Energiegemeinschaft" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] },
+          { "matcher": { "id": "byName", "options": "Einspeisung" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+          { "matcher": { "id": "byName", "options": "Reststrom" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] }
+        ]
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "pieType": "donut",
+        "displayLabels": ["name", "percent"],
+        "legend": { "displayMode": "list", "placement": "right", "values": ["value", "percent"] }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  SUM(community)         AS \"Energiegemeinschaft\",\n  SUM(feed)              AS \"Einspeisung\",\n  SUM(remaining_demand)  AS \"Reststrom\"\nFROM kpi_measurements\nWHERE $__timeFilter(timestamp)\n  AND community_id IN ($community)"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "heatmap",
+      "title": "Autarkie-Heatmap (Wochentag)",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 9, "w": 16, "x": 8, "y": 14 },
+      "options": {
+        "calculate": false,
+        "cellGap": 2,
+        "color": { "scheme": "RdYlGn", "mode": "scheme", "steps": 64, "reverse": false },
+        "yAxis": { "axisLabel": "Wochentag (0=So)", "unit": "short" },
+        "legend": { "show": true },
+        "tooltip": { "show": true, "yHistogram": false }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT timestamp AS \"time\",\n       EXTRACT(DOW FROM timestamp)::text AS metric,\n       autarky AS value\nFROM kpi_measurements\nWHERE $__timeFilter(timestamp)\n  AND community_id IN ($community)\n  AND autarky IS NOT NULL\nORDER BY 1"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "table",
+      "title": "Datenqualität – NULL-Werte je KPI",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 23 },
+      "options": { "showHeader": true },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "auto", "displayMode": "auto" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  COUNT(*)                                        AS \"Datensätze\",\n  COUNT(*) FILTER (WHERE autarky IS NULL)          AS \"NULL Autarkie\",\n  COUNT(*) FILTER (WHERE own_consumption IS NULL)  AS \"NULL Eigenverbrauch\",\n  COUNT(*) FILTER (WHERE community IS NULL)        AS \"NULL Energiegemeinschaft\",\n  COUNT(*) FILTER (WHERE feed IS NULL)             AS \"NULL Einspeisung\",\n  COUNT(*) FILTER (WHERE remaining_demand IS NULL) AS \"NULL Reststrom\"\nFROM kpi_measurements\nWHERE $__timeFilter(timestamp)\n  AND community_id IN ($community)"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "table",
+      "title": "Letzter empfangener KPI-Datensatz je Energiegemeinschaft",
+      "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 23 },
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto" } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Alter (h)" },
+            "properties": [
+              { "id": "unit", "value": "h" },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "orange", "value": 25 },
+                    { "color": "red", "value": 48 }
+                  ]
+                }
+              },
+              { "id": "custom.displayMode", "value": "color-background" }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT community_id AS \"Energiegemeinschaft\",\n       MAX(timestamp) AS \"Letzter Datensatz\",\n       EXTRACT(EPOCH FROM (NOW() - MAX(timestamp)))/3600 AS \"Alter (h)\"\nFROM kpi_measurements\nGROUP BY community_id\nORDER BY 3 DESC"
+        }
+      ]
+    }
+  ],
+  "refresh": "5m",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["egwn", "energy-community", "kpi"],
+  "templating": {
+    "list": [
+      {
+        "name": "DS_TIMESCALE",
+        "label": "Datasource",
+        "type": "datasource",
+        "query": "postgres",
+        "current": {},
+        "hide": 0,
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false
+      },
+      {
+        "name": "community",
+        "label": "Energiegemeinschaft",
+        "type": "query",
+        "datasource": { "type": "postgres", "uid": "${DS_TIMESCALE}" },
+        "definition": "SELECT DISTINCT community_id FROM kpi_measurements ORDER BY community_id",
+        "query": "SELECT DISTINCT community_id FROM kpi_measurements ORDER BY community_id",
+        "includeAll": true,
+        "multi": true,
+        "refresh": 2,
+        "sort": 1,
+        "current": { "selected": true, "text": ["All"], "value": ["$__all"] }
+      }
+    ]
+  },
+  "time": { "from": "now-30d", "to": "now" },
+  "timepicker": {
+    "refresh_intervals": ["30s", "1m", "5m", "15m", "30m", "1h", "6h", "12h", "1d"]
+  },
+  "timezone": "Europe/Vienna",
+  "title": "EGWN – Energiegemeinschaft Overview",
+  "uid": "egwn-community-overview",
+  "version": 1,
+  "weekStart": "monday"
+}

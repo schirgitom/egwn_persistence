@@ -2,11 +2,12 @@ using System.Text.Json.Serialization;
 
 namespace EGWNPersistence.Application.DTOs;
 
+/// <summary>
+/// RabbitMQ payload for community-scoped KPI values. Each entry carries a timestamp
+/// and a nested <see cref="KpiValuesDto"/> whose individual fields may be null.
+/// </summary>
 public sealed class KpiMessageDto
 {
-    [JsonPropertyName("meterId")]
-    public string MeterId { get; init; } = string.Empty;
-
     [JsonPropertyName("communityId")]
     public string CommunityId { get; init; } = string.Empty;
 
@@ -14,26 +15,32 @@ public sealed class KpiMessageDto
     public DateTimeOffset CreatedAtUtc { get; init; }
 
     [JsonPropertyName("values")]
-    public List<KpiValueDto> Values { get; init; } = [];
+    public List<KpiValueEntryDto> Values { get; init; } = [];
 }
 
-public sealed class KpiValueDto
+public sealed class KpiValueEntryDto
 {
     [JsonPropertyName("timestamp")]
     public DateTimeOffset Timestamp { get; init; }
 
+    [JsonPropertyName("values")]
+    public KpiValuesDto Values { get; init; } = new();
+}
+
+public sealed class KpiValuesDto
+{
     [JsonPropertyName("autarky")]
-    public decimal Autarky { get; init; }
+    public decimal? Autarky { get; init; }
 
     [JsonPropertyName("ownConsumption")]
-    public decimal OwnConsumption { get; init; }
+    public decimal? OwnConsumption { get; init; }
 
     [JsonPropertyName("community")]
-    public decimal Community { get; init; }
+    public decimal? Community { get; init; }
 
     [JsonPropertyName("feed")]
-    public decimal Feed { get; init; }
+    public decimal? Feed { get; init; }
 
     [JsonPropertyName("remainingDemand")]
-    public decimal RemainingDemand { get; init; }
+    public decimal? RemainingDemand { get; init; }
 }

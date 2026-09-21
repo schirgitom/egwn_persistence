@@ -1,17 +1,17 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\Entwicklung\\Projekte\\EGWN\\egwn_persistence\\",
+  "WorkspaceRootPath": "D:\\Entwicklung\\Energiegemeinschaft Weiz Nord\\EGWNPersistence\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{42FCAEA1-40D1-D997-4007-C5D579F49FA1}|src\\EGWNPersistence.Worker\\EGWNPersistence.Worker.csproj|d:\\entwicklung\\projekte\\egwn\\egwn_persistence\\src\\egwnpersistence.worker\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "AbsoluteMoniker": "D:0:0:{42FCAEA1-40D1-D997-4007-C5D579F49FA1}|src\\EGWNPersistence.Worker\\EGWNPersistence.Worker.csproj|d:\\entwicklung\\energiegemeinschaft weiz nord\\egwnpersistence\\src\\egwnpersistence.worker\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{42FCAEA1-40D1-D997-4007-C5D579F49FA1}|src\\EGWNPersistence.Worker\\EGWNPersistence.Worker.csproj|solutionrelative:src\\egwnpersistence.worker\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{18C11D70-C775-61AD-CDA5-2C80DBBFCFC7}|src\\EGWNPersistence.Application\\EGWNPersistence.Application.csproj|d:\\entwicklung\\projekte\\egwn\\egwn_persistence\\src\\egwnpersistence.application\\configuration\\measurementcorrectionoptions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{18C11D70-C775-61AD-CDA5-2C80DBBFCFC7}|src\\EGWNPersistence.Application\\EGWNPersistence.Application.csproj|d:\\entwicklung\\energiegemeinschaft weiz nord\\egwnpersistence\\src\\egwnpersistence.application\\configuration\\measurementcorrectionoptions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{18C11D70-C775-61AD-CDA5-2C80DBBFCFC7}|src\\EGWNPersistence.Application\\EGWNPersistence.Application.csproj|solutionrelative:src\\egwnpersistence.application\\configuration\\measurementcorrectionoptions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{42FCAEA1-40D1-D997-4007-C5D579F49FA1}|src\\EGWNPersistence.Worker\\EGWNPersistence.Worker.csproj|d:\\entwicklung\\projekte\\egwn\\egwn_persistence\\src\\egwnpersistence.worker\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "AbsoluteMoniker": "D:0:0:{42FCAEA1-40D1-D997-4007-C5D579F49FA1}|src\\EGWNPersistence.Worker\\EGWNPersistence.Worker.csproj|d:\\entwicklung\\energiegemeinschaft weiz nord\\egwnpersistence\\src\\egwnpersistence.worker\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
       "RelativeMoniker": "D:0:0:{42FCAEA1-40D1-D997-4007-C5D579F49FA1}|src\\EGWNPersistence.Worker\\EGWNPersistence.Worker.csproj|solutionrelative:src\\egwnpersistence.worker\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
     }
   ],
@@ -64,11 +64,11 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "appsettings.json",
-              "DocumentMoniker": "D:\\Entwicklung\\Projekte\\EGWN\\egwn_persistence\\src\\EGWNPersistence.Worker\\appsettings.json",
+              "DocumentMoniker": "D:\\Entwicklung\\Energiegemeinschaft Weiz Nord\\EGWNPersistence\\src\\EGWNPersistence.Worker\\appsettings.json",
               "RelativeDocumentMoniker": "src\\EGWNPersistence.Worker\\appsettings.json",
-              "ToolTip": "D:\\Entwicklung\\Projekte\\EGWN\\egwn_persistence\\src\\EGWNPersistence.Worker\\appsettings.json",
+              "ToolTip": "D:\\Entwicklung\\Energiegemeinschaft Weiz Nord\\EGWNPersistence\\src\\EGWNPersistence.Worker\\appsettings.json",
               "RelativeToolTip": "src\\EGWNPersistence.Worker\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAA0AAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2026-09-20T07:59:46.354Z",
               "EditorCaption": ""
@@ -77,9 +77,9 @@
               "$type": "Document",
               "DocumentIndex": 1,
               "Title": "MeasurementCorrectionOptions.cs",
-              "DocumentMoniker": "D:\\Entwicklung\\Projekte\\EGWN\\egwn_persistence\\src\\EGWNPersistence.Application\\Configuration\\MeasurementCorrectionOptions.cs",
+              "DocumentMoniker": "D:\\Entwicklung\\Energiegemeinschaft Weiz Nord\\EGWNPersistence\\src\\EGWNPersistence.Application\\Configuration\\MeasurementCorrectionOptions.cs",
               "RelativeDocumentMoniker": "src\\EGWNPersistence.Application\\Configuration\\MeasurementCorrectionOptions.cs",
-              "ToolTip": "D:\\Entwicklung\\Projekte\\EGWN\\egwn_persistence\\src\\EGWNPersistence.Application\\Configuration\\MeasurementCorrectionOptions.cs",
+              "ToolTip": "D:\\Entwicklung\\Energiegemeinschaft Weiz Nord\\EGWNPersistence\\src\\EGWNPersistence.Application\\Configuration\\MeasurementCorrectionOptions.cs",
               "RelativeToolTip": "src\\EGWNPersistence.Application\\Configuration\\MeasurementCorrectionOptions.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -89,9 +89,9 @@
               "$type": "Document",
               "DocumentIndex": 2,
               "Title": "Dockerfile",
-              "DocumentMoniker": "D:\\Entwicklung\\Projekte\\EGWN\\egwn_persistence\\src\\EGWNPersistence.Worker\\Dockerfile",
+              "DocumentMoniker": "D:\\Entwicklung\\Energiegemeinschaft Weiz Nord\\EGWNPersistence\\src\\EGWNPersistence.Worker\\Dockerfile",
               "RelativeDocumentMoniker": "src\\EGWNPersistence.Worker\\Dockerfile",
-              "ToolTip": "D:\\Entwicklung\\Projekte\\EGWN\\egwn_persistence\\src\\EGWNPersistence.Worker\\Dockerfile",
+              "ToolTip": "D:\\Entwicklung\\Energiegemeinschaft Weiz Nord\\EGWNPersistence\\src\\EGWNPersistence.Worker\\Dockerfile",
               "RelativeToolTip": "src\\EGWNPersistence.Worker\\Dockerfile",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",

@@ -29,8 +29,9 @@ public static class InfrastructureServiceRegistration
 
         services.AddScoped<IUnitOfWork, PostgresUnitOfWork>();
 
-        // RabbitMQ consumer (hosted service)
+        // RabbitMQ consumers (hosted services)
         services.AddHostedService<MeasurementConsumer>();
+        services.AddHostedService<KpiConsumer>();
 
         return services;
     }

@@ -8,6 +8,7 @@ public interface IUnitOfWork : IAsyncDisposable
 {
     IMeterPointRepository MeterPoints { get; }
     IMeasurementRepository Measurements { get; }
+    IKpiMeasurementRepository KpiMeasurements { get; }
 
     Task BeginAsync(CancellationToken cancellationToken = default);
     Task SaveChangesAsync(CancellationToken cancellationToken = default);

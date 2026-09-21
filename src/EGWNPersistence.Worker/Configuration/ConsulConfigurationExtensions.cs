@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using Consul;
 using Microsoft.Extensions.Configuration;
+using Serilog;
 
 namespace EGWNPersistence.Worker.Configuration;
 
@@ -31,6 +32,7 @@ public sealed class ConsulConfigurationProvider(string address, string keyPrefix
 {
     public override void Load()
     {
+        var key = keyPrefix.Trim('/');
         var client = new ConsulClient(config =>
         {
             config.Address = new Uri(address);
@@ -38,19 +40,43 @@ public sealed class ConsulConfigurationProvider(string address, string keyPrefix
 
         try
         {
-            var result = client.KV.Get(keyPrefix.Trim('/')).GetAwaiter().GetResult();
-            if (result.Response?.Value is { } raw)
+            var result = client.KV.Get(key).GetAwaiter().GetResult();
+
+            if (result.Response is null)
             {
-                var value = Encoding.UTF8.GetString(raw);
-                if (TryParseJsonObject(value, out var json))
-                {
-                    AddJsonSection(string.Empty, json);
-                }
+                Log.Warning(
+                    "Consul KV key '{Key}' not found at '{Address}'. Falling back to local configuration.",
+                    key, address);
+                return;
             }
+
+            if (result.Response.Value is not { Length: > 0 } raw)
+            {
+                Log.Warning(
+                    "Consul KV key '{Key}' at '{Address}' has an empty value. Nothing to load.",
+                    key, address);
+                return;
+            }
+
+            var value = Encoding.UTF8.GetString(raw);
+            if (!TryParseJsonObject(value, out var json))
+            {
+                Log.Error(
+                    "Consul KV key '{Key}' at '{Address}' does not contain a valid JSON object. Falling back to local configuration.",
+                    key, address);
+                return;
+            }
+
+            AddJsonSection(string.Empty, json);
+            Log.Information(
+                "Loaded {Count} configuration entries from Consul key '{Key}' at '{Address}'.",
+                Data.Count, key, address);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Consul not available: local appsettings continue to work.
+            Log.Error(ex,
+                "Failed to load configuration from Consul at '{Address}' (key '{Key}'). Falling back to local configuration.",
+                address, key);
         }
     }
 

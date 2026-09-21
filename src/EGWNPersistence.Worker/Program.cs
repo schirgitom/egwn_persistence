@@ -32,7 +32,12 @@ try
     var consulKeyPrefix = builder.Configuration["Consul:KeyPrefix"] ?? "egwnpersistence/appsettings";
     if (!string.IsNullOrWhiteSpace(consulAddress))
     {
+        Log.Information("Loading configuration from Consul at '{Address}' (key '{Key}')", consulAddress, consulKeyPrefix);
         builder.Configuration.AddConsul(consulAddress, consulKeyPrefix);
+    }
+    else
+    {
+        Log.Warning("Consul:Address not configured - skipping Consul configuration source");
     }
 
     builder.Services.AddSerilog((services, lc) => lc

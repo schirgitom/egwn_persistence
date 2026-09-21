@@ -11,6 +11,7 @@ public sealed class PostgresUnitOfWork(EGWNPersistenceDbContext dbContext) : IUn
 
     public IMeterPointRepository MeterPoints { get; } = new MeterPointRepository(dbContext);
     public IMeasurementRepository Measurements { get; } = new MeasurementRepository(dbContext);
+    public IKpiMeasurementRepository KpiMeasurements { get; } = new KpiMeasurementRepository(dbContext);
 
     public async Task BeginAsync(CancellationToken cancellationToken = default)
     {

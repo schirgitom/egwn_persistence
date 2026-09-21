@@ -94,11 +94,7 @@ public sealed class EGWNPersistenceDbContext(DbContextOptions<EGWNPersistenceDbC
         modelBuilder.Entity<KpiMeasurement>(entity =>
         {
             entity.ToTable("kpi_measurements");
-            entity.HasKey(x => new { x.MeterPointId, x.Timestamp });
-            entity.Property(x => x.MeterPointId)
-                .HasColumnName("meter_id")
-                .HasColumnType("bigint")
-                .IsRequired();
+            entity.HasKey(x => new { x.CommunityId, x.Timestamp });
             entity.Property(x => x.CommunityId)
                 .HasColumnName("community_id")
                 .HasMaxLength(100)
@@ -109,24 +105,19 @@ public sealed class EGWNPersistenceDbContext(DbContextOptions<EGWNPersistenceDbC
                 .IsRequired();
             entity.Property(x => x.Autarky)
                 .HasColumnName("autarky")
-                .HasColumnType("numeric(18,6)")
-                .IsRequired();
+                .HasColumnType("numeric(18,6)");
             entity.Property(x => x.OwnConsumption)
                 .HasColumnName("own_consumption")
-                .HasColumnType("numeric(18,6)")
-                .IsRequired();
+                .HasColumnType("numeric(18,6)");
             entity.Property(x => x.Community)
                 .HasColumnName("community")
-                .HasColumnType("numeric(18,6)")
-                .IsRequired();
+                .HasColumnType("numeric(18,6)");
             entity.Property(x => x.Feed)
                 .HasColumnName("feed")
-                .HasColumnType("numeric(18,6)")
-                .IsRequired();
+                .HasColumnType("numeric(18,6)");
             entity.Property(x => x.RemainingDemand)
                 .HasColumnName("remaining_demand")
-                .HasColumnType("numeric(18,6)")
-                .IsRequired();
+                .HasColumnType("numeric(18,6)");
             entity.Property(x => x.IngestedAt)
                 .HasColumnName("ingested_at")
                 .HasColumnType("timestamptz")
@@ -140,8 +131,6 @@ public sealed class EGWNPersistenceDbContext(DbContextOptions<EGWNPersistenceDbC
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
-            entity.HasIndex(x => new { x.MeterPointId, x.Timestamp })
-                .IsUnique();
             entity.HasIndex(x => x.Timestamp);
         });
     }

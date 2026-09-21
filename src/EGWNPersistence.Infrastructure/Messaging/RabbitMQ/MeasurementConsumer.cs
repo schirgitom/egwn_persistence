@@ -19,6 +19,7 @@ public sealed class MeasurementConsumer : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<MeasurementConsumer> _logger;
     private readonly RabbitMqOptions _options;
+    private readonly RabbitMqQueueOptions _queue;
     private IConnection? _connection;
     private IChannel? _channel;
 
@@ -30,6 +31,7 @@ public sealed class MeasurementConsumer : BackgroundService
         _scopeFactory = scopeFactory;
         _logger = logger;
         _options = options.Value;
+        _queue = _options.Measurements;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -63,14 +65,14 @@ public sealed class MeasurementConsumer : BackgroundService
             cancellationToken: cancellationToken);
 
         await _channel.QueueDeclareAsync(
-            _options.DeadLetterQueue,
+            _queue.DeadLetterQueue,
             durable: true,
             exclusive: false,
             autoDelete: false,
             cancellationToken: cancellationToken);
 
         await _channel.QueueBindAsync(
-            _options.DeadLetterQueue,
+            _queue.DeadLetterQueue,
             _options.DeadLetterExchange,
             routingKey: string.Empty,
             cancellationToken: cancellationToken);
@@ -83,7 +85,7 @@ public sealed class MeasurementConsumer : BackgroundService
 
         // Declare main queue with DLX routing
         await _channel.QueueDeclareAsync(
-            _options.QueueName,
+            _queue.QueueName,
             durable: true,
             exclusive: false,
             autoDelete: false,
@@ -94,9 +96,9 @@ public sealed class MeasurementConsumer : BackgroundService
             cancellationToken: cancellationToken);
 
         await _channel.QueueBindAsync(
-            _options.QueueName,
+            _queue.QueueName,
             _options.Exchange,
-            _options.RoutingKey,
+            _queue.RoutingKey,
             cancellationToken: cancellationToken);
 
         await _channel.BasicQosAsync(0, _options.PrefetchCount, false, cancellationToken);
@@ -105,14 +107,14 @@ public sealed class MeasurementConsumer : BackgroundService
         consumer.ReceivedAsync += HandleMessageAsync;
 
         await _channel.BasicConsumeAsync(
-            _options.QueueName,
+            _queue.QueueName,
             autoAck: false,
             consumer: consumer,
             cancellationToken: cancellationToken);
 
         _logger.LogInformation(
             "RabbitMQ consumer started. Queue '{Queue}' bound to exchange '{Exchange}' ({ExchangeType}) with routing key '{RoutingKey}' at {Host}:{Port}",
-            _options.QueueName, _options.Exchange, _options.ExchangeType, _options.RoutingKey, _options.Host, _options.Port);
+            _queue.QueueName, _options.Exchange, _options.ExchangeType, _queue.RoutingKey, _options.Host, _options.Port);
     }
 
     private async Task HandleMessageAsync(object sender, BasicDeliverEventArgs args)

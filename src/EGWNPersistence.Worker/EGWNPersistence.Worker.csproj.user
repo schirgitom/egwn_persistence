@@ -2,6 +2,6 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ActiveDebugProfile>Container (Dockerfile)</ActiveDebugProfile>
-    <_LastSelectedProfileId>D:\Entwicklung\Projekte\EGWN\egwn_persistence\src\EGWNPersistence.Worker\Properties\PublishProfiles\registry.hub.docker.com_thomasschirgi.pubxml</_LastSelectedProfileId>
+    <_LastSelectedProfileId>D:\Entwicklung\Energiegemeinschaft Weiz Nord\EGWNPersistence\src\EGWNPersistence.Worker\Properties\PublishProfiles\registry.hub.docker.com_thomasschirgi.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
 </Project>
