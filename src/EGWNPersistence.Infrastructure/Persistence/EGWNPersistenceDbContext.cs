@@ -9,6 +9,7 @@ public sealed class EGWNPersistenceDbContext(DbContextOptions<EGWNPersistenceDbC
 {
     public DbSet<MeterPoint> MeterPoints => Set<MeterPoint>();
     public DbSet<MeterMeasurement> RawMeasurements => Set<MeterMeasurement>();
+    public DbSet<MeterPointCommunity> MeterPointCommunities => Set<MeterPointCommunity>();
     public DbSet<KpiMeasurement> KpiMeasurements => Set<KpiMeasurement>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -40,10 +41,14 @@ public sealed class EGWNPersistenceDbContext(DbContextOptions<EGWNPersistenceDbC
         modelBuilder.Entity<MeterMeasurement>(entity =>
         {
             entity.ToTable("raw_measurements");
-            entity.HasKey(x => new { x.MeterPointId, x.Timestamp });
+            entity.HasKey(x => new { x.MeterPointId, x.CommunityId, x.Timestamp });
             entity.Property(x => x.MeterPointId)
                 .HasColumnName("meter_id")
                 .HasColumnType("bigint")
+                .IsRequired();
+            entity.Property(x => x.CommunityId)
+                .HasColumnName("community_id")
+                .HasMaxLength(100)
                 .IsRequired();
             entity.Property(x => x.Timestamp)
                 .HasColumnName("timestamp")
@@ -86,9 +91,29 @@ public sealed class EGWNPersistenceDbContext(DbContextOptions<EGWNPersistenceDbC
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
-            entity.HasIndex(x => new { x.MeterPointId, x.Timestamp })
-                .IsUnique();
-            entity.HasIndex(x => x.Timestamp);
+            entity.HasIndex(x => new { x.CommunityId, x.MeterPointId, x.Timestamp });
+        });
+
+        modelBuilder.Entity<MeterPointCommunity>(entity =>
+        {
+            entity.ToTable("meter_point_communities");
+            entity.HasKey(x => new { x.MeterPointId, x.CommunityId });
+            entity.Property(x => x.MeterPointId)
+                .HasColumnName("meter_id")
+                .HasColumnType("bigint");
+            entity.Property(x => x.CommunityId)
+                .HasColumnName("community_id")
+                .HasMaxLength(100)
+                .IsRequired();
+            entity.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasColumnType("timestamptz")
+                .IsRequired();
+            entity.HasOne<MeterPoint>()
+                .WithMany()
+                .HasForeignKey(x => x.MeterPointId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(x => x.CommunityId);
         });
 
         modelBuilder.Entity<KpiMeasurement>(entity =>

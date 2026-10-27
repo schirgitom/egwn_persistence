@@ -34,6 +34,7 @@ DROP MATERIALIZED VIEW IF EXISTS community_yearly_rollups CASCADE;
 CREATE MATERIALIZED VIEW hourly_rollups
 WITH (timescaledb.continuous) AS
 SELECT
+    community_id,
     meter_id,
     time_bucket('1 hour', timestamp) AS bucket_hour,
     SUM(total_consumption) AS total_consumption,
@@ -43,11 +44,11 @@ SELECT
     SUM(community_share) / NULLIF(SUM(total_consumption), 0) AS avg_community_share_percent,
     COUNT(*) AS measurement_count
 FROM raw_measurements
-GROUP BY meter_id, time_bucket('1 hour', timestamp)
+GROUP BY community_id, meter_id, time_bucket('1 hour', timestamp)
 WITH NO DATA;
 
 CREATE INDEX IF NOT EXISTS idx_hourly_rollups_meter_bucket
-    ON hourly_rollups (meter_id, bucket_hour DESC);
+    ON hourly_rollups (community_id, meter_id, bucket_hour DESC);
 
 -- -----------------------------------------------------------------------------
 -- Daily rollups
@@ -55,6 +56,7 @@ CREATE INDEX IF NOT EXISTS idx_hourly_rollups_meter_bucket
 CREATE MATERIALIZED VIEW daily_rollups
 WITH (timescaledb.continuous) AS
 SELECT
+    community_id,
     meter_id,
     time_bucket('1 day', timestamp) AS bucket_day,
     SUM(total_consumption) AS total_consumption,
@@ -64,11 +66,11 @@ SELECT
     SUM(community_share) / NULLIF(SUM(total_consumption), 0) AS avg_community_share_percent,
     COUNT(*) AS measurement_count
 FROM raw_measurements
-GROUP BY meter_id, time_bucket('1 day', timestamp)
+GROUP BY community_id, meter_id, time_bucket('1 day', timestamp)
 WITH NO DATA;
 
 CREATE INDEX IF NOT EXISTS idx_daily_rollups_meter_bucket
-    ON daily_rollups (meter_id, bucket_day DESC);
+    ON daily_rollups (community_id, meter_id, bucket_day DESC);
 
 -- -----------------------------------------------------------------------------
 -- Monthly rollups
@@ -76,6 +78,7 @@ CREATE INDEX IF NOT EXISTS idx_daily_rollups_meter_bucket
 CREATE MATERIALIZED VIEW monthly_rollups
 WITH (timescaledb.continuous) AS
 SELECT
+    community_id,
     meter_id,
     time_bucket('1 month', timestamp) AS bucket_month,
     SUM(total_consumption) AS total_consumption,
@@ -85,11 +88,11 @@ SELECT
     SUM(community_share) / NULLIF(SUM(total_consumption), 0) AS avg_community_share_percent,
     COUNT(*) AS measurement_count
 FROM raw_measurements
-GROUP BY meter_id, time_bucket('1 month', timestamp)
+GROUP BY community_id, meter_id, time_bucket('1 month', timestamp)
 WITH NO DATA;
 
 CREATE INDEX IF NOT EXISTS idx_monthly_rollups_meter_bucket
-    ON monthly_rollups (meter_id, bucket_month DESC);
+    ON monthly_rollups (community_id, meter_id, bucket_month DESC);
 
 -- -----------------------------------------------------------------------------
 -- Yearly rollups
@@ -97,6 +100,7 @@ CREATE INDEX IF NOT EXISTS idx_monthly_rollups_meter_bucket
 CREATE MATERIALIZED VIEW yearly_rollups
 WITH (timescaledb.continuous) AS
 SELECT
+    community_id,
     meter_id,
     time_bucket('1 year', timestamp) AS bucket_year,
     SUM(total_consumption) AS total_consumption,
@@ -106,11 +110,11 @@ SELECT
     SUM(community_share) / NULLIF(SUM(total_consumption), 0) AS avg_community_share_percent,
     COUNT(*) AS measurement_count
 FROM raw_measurements
-GROUP BY meter_id, time_bucket('1 year', timestamp)
+GROUP BY community_id, meter_id, time_bucket('1 year', timestamp)
 WITH NO DATA;
 
 CREATE INDEX IF NOT EXISTS idx_yearly_rollups_meter_bucket
-    ON yearly_rollups (meter_id, bucket_year DESC);
+    ON yearly_rollups (community_id, meter_id, bucket_year DESC);
 
 -- -----------------------------------------------------------------------------
 -- Community-wide hourly rollups
@@ -118,6 +122,7 @@ CREATE INDEX IF NOT EXISTS idx_yearly_rollups_meter_bucket
 CREATE MATERIALIZED VIEW community_hourly_rollups
 WITH (timescaledb.continuous) AS
 SELECT
+    community_id,
     time_bucket('1 hour', timestamp) AS bucket_hour,
     SUM(total_consumption) AS total_consumption,
     SUM(grid_share) AS grid_share,
@@ -126,11 +131,11 @@ SELECT
     SUM(community_share) / NULLIF(SUM(total_consumption), 0) AS avg_community_share_percent,
     COUNT(*) AS measurement_count
 FROM raw_measurements
-GROUP BY time_bucket('1 hour', timestamp)
+GROUP BY community_id, time_bucket('1 hour', timestamp)
 WITH NO DATA;
 
 CREATE INDEX IF NOT EXISTS idx_community_hourly_rollups_bucket
-    ON community_hourly_rollups (bucket_hour DESC);
+    ON community_hourly_rollups (community_id, bucket_hour DESC);
 
 -- -----------------------------------------------------------------------------
 -- Community-wide daily rollups
@@ -138,6 +143,7 @@ CREATE INDEX IF NOT EXISTS idx_community_hourly_rollups_bucket
 CREATE MATERIALIZED VIEW community_daily_rollups
 WITH (timescaledb.continuous) AS
 SELECT
+    community_id,
     time_bucket('1 day', timestamp) AS bucket_day,
     SUM(total_consumption) AS total_consumption,
     SUM(grid_share) AS grid_share,
@@ -146,11 +152,11 @@ SELECT
     SUM(community_share) / NULLIF(SUM(total_consumption), 0) AS avg_community_share_percent,
     COUNT(*) AS measurement_count
 FROM raw_measurements
-GROUP BY time_bucket('1 day', timestamp)
+GROUP BY community_id, time_bucket('1 day', timestamp)
 WITH NO DATA;
 
 CREATE INDEX IF NOT EXISTS idx_community_daily_rollups_bucket
-    ON community_daily_rollups (bucket_day DESC);
+    ON community_daily_rollups (community_id, bucket_day DESC);
 
 -- -----------------------------------------------------------------------------
 -- Community-wide monthly rollups
@@ -158,6 +164,7 @@ CREATE INDEX IF NOT EXISTS idx_community_daily_rollups_bucket
 CREATE MATERIALIZED VIEW community_monthly_rollups
 WITH (timescaledb.continuous) AS
 SELECT
+    community_id,
     time_bucket('1 month', timestamp) AS bucket_month,
     SUM(total_consumption) AS total_consumption,
     SUM(grid_share) AS grid_share,
@@ -166,11 +173,11 @@ SELECT
     SUM(community_share) / NULLIF(SUM(total_consumption), 0) AS avg_community_share_percent,
     COUNT(*) AS measurement_count
 FROM raw_measurements
-GROUP BY time_bucket('1 month', timestamp)
+GROUP BY community_id, time_bucket('1 month', timestamp)
 WITH NO DATA;
 
 CREATE INDEX IF NOT EXISTS idx_community_monthly_rollups_bucket
-    ON community_monthly_rollups (bucket_month DESC);
+    ON community_monthly_rollups (community_id, bucket_month DESC);
 
 -- -----------------------------------------------------------------------------
 -- Community-wide yearly rollups
@@ -178,6 +185,7 @@ CREATE INDEX IF NOT EXISTS idx_community_monthly_rollups_bucket
 CREATE MATERIALIZED VIEW community_yearly_rollups
 WITH (timescaledb.continuous) AS
 SELECT
+    community_id,
     time_bucket('1 year', timestamp) AS bucket_year,
     SUM(total_consumption) AS total_consumption,
     SUM(grid_share) AS grid_share,
@@ -186,11 +194,11 @@ SELECT
     SUM(community_share) / NULLIF(SUM(total_consumption), 0) AS avg_community_share_percent,
     COUNT(*) AS measurement_count
 FROM raw_measurements
-GROUP BY time_bucket('1 year', timestamp)
+GROUP BY community_id, time_bucket('1 year', timestamp)
 WITH NO DATA;
 
 CREATE INDEX IF NOT EXISTS idx_community_yearly_rollups_bucket
-    ON community_yearly_rollups (bucket_year DESC);
+    ON community_yearly_rollups (community_id, bucket_year DESC);
 
 -- -----------------------------------------------------------------------------
 -- Initial backfill (long history)

@@ -10,6 +10,7 @@ public interface IMeasurementRepository
     /// </summary>
     Task<IReadOnlyDictionary<DateTimeOffset, MeterMeasurement>> GetExistingAsync(
         long meterPointId,
+        string communityId,
         IEnumerable<DateTimeOffset> timestamps,
         CancellationToken cancellationToken = default);
 

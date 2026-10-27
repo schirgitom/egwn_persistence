@@ -58,9 +58,10 @@ public sealed class MeterMeasurementTests
         const long mpId = 7L;
         var ts = new DateTimeOffset(2024, 1, 15, 8, 0, 0, TimeSpan.Zero);
 
-        var m = MeterMeasurement.Create(mpId, ts, 1.234m, 0.5m, 0.734m, 0.4053m, 0.5947m, "EDA");
+        var m = MeterMeasurement.Create(mpId, "community-1", ts, 1.234m, 0.5m, 0.734m, 0.4053m, 0.5947m, "EDA");
 
         m.MeterPointId.Should().Be(mpId);
+        m.CommunityId.Should().Be("community-1");
         m.Timestamp.Should().Be(ts.ToUniversalTime());
         m.TotalConsumption.Should().Be(1.234m);
         m.GridShare.Should().Be(0.5m);
@@ -79,7 +80,7 @@ public sealed class MeterMeasurementTests
         const long mpId = 9L;
         var localTs = new DateTimeOffset(2024, 1, 15, 10, 0, 0, TimeSpan.FromHours(2)); // CET+2
 
-        var m = MeterMeasurement.Create(mpId, localTs, 1.0m, 0.5m, 0.5m, 0.5m, 0.5m, "EDA");
+        var m = MeterMeasurement.Create(mpId, "community-1", localTs, 1.0m, 0.5m, 0.5m, 0.5m, 0.5m, "EDA");
 
         m.Timestamp.Offset.Should().Be(TimeSpan.Zero);
         m.Timestamp.Hour.Should().Be(8); // 10:00+02:00 → 08:00 UTC
@@ -91,14 +92,14 @@ public sealed class MeterMeasurementTests
     [InlineData(null)]
     public void Create_WithEmptySource_Throws(string? source)
     {
-        var act = () => MeterMeasurement.Create(11L, DateTimeOffset.UtcNow, 1m, 0.5m, 0.5m, 0.5m, 0.5m, source!);
+        var act = () => MeterMeasurement.Create(11L, "community-1", DateTimeOffset.UtcNow, 1m, 0.5m, 0.5m, 0.5m, 0.5m, source!);
         act.Should().Throw<ArgumentException>();
     }
 
     [Fact]
     public void Create_TrimsSource()
     {
-        var m = MeterMeasurement.Create(12L, DateTimeOffset.UtcNow, 1m, 0.5m, 0.5m, 0.5m, 0.5m, "  EDA  ");
+        var m = MeterMeasurement.Create(12L, "community-1", DateTimeOffset.UtcNow, 1m, 0.5m, 0.5m, 0.5m, 0.5m, "  EDA  ");
         m.Source.Should().Be("EDA");
     }
 
@@ -106,7 +107,7 @@ public sealed class MeterMeasurementTests
     public void CanBeCorrected_WithinThreeWeeks_ReturnsTrue()
     {
         var ts = DateTimeOffset.UtcNow.AddDays(-10);
-        var m = MeterMeasurement.Create(13L, ts, 1m, 0.5m, 0.5m, 0.5m, 0.5m, "EDA");
+        var m = MeterMeasurement.Create(13L, "community-1", ts, 1m, 0.5m, 0.5m, 0.5m, 0.5m, "EDA");
 
         m.CanBeCorrected(DateTimeOffset.UtcNow).Should().BeTrue();
     }
@@ -115,7 +116,7 @@ public sealed class MeterMeasurementTests
     public void ApplyCorrection_OutsideCorrectionWindow_Throws()
     {
         var ts = DateTimeOffset.UtcNow.AddDays(-30);
-        var m = MeterMeasurement.Create(14L, ts, 1m, 0.5m, 0.5m, 0.5m, 0.5m, "EDA");
+        var m = MeterMeasurement.Create(14L, "community-1", ts, 1m, 0.5m, 0.5m, 0.5m, 0.5m, "EDA");
 
         var act = () => m.ApplyCorrection(2m, 1m, 1m, 0.4m, 0.6m, "EDA", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
 

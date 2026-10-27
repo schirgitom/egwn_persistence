@@ -60,7 +60,7 @@ public sealed class IngestMeasurementsHandlerTests
                     .SetValue(mp, 1000L);
             })
             .Returns(Task.CompletedTask);
-        _measurementRepo.Setup(r => r.GetExistingAsync(It.IsAny<long>(), It.IsAny<IEnumerable<DateTimeOffset>>(), It.IsAny<CancellationToken>()))
+        _measurementRepo.Setup(r => r.GetExistingAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<IEnumerable<DateTimeOffset>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Dictionary<DateTimeOffset, MeterMeasurement>());
         _measurementRepo.Setup(r => r.BulkInsertAsync(It.IsAny<IEnumerable<MeterMeasurement>>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -85,7 +85,7 @@ public sealed class IngestMeasurementsHandlerTests
         var existingMeterPoint = MeterPoint.Reconstitute(1001L, "AT002", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
         _meterPointRepo.Setup(r => r.GetByMeterPointNumberAsync("AT002", It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingMeterPoint);
-        _measurementRepo.Setup(r => r.GetExistingAsync(existingMeterPoint.Id, It.IsAny<IEnumerable<DateTimeOffset>>(), It.IsAny<CancellationToken>()))
+        _measurementRepo.Setup(r => r.GetExistingAsync(existingMeterPoint.Id, It.IsAny<string>(), It.IsAny<IEnumerable<DateTimeOffset>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Dictionary<DateTimeOffset, MeterMeasurement>());
         _measurementRepo.Setup(r => r.BulkInsertAsync(It.IsAny<IEnumerable<MeterMeasurement>>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -105,6 +105,43 @@ public sealed class IngestMeasurementsHandlerTests
     }
 
     [Fact]
+    public async Task Handle_WhenMeterPointIsInAnotherCommunity_IngestsSeparateCommunityMeasurement()
+    {
+        var meterPoint = MeterPoint.Reconstitute(1006L, "AT006", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+        _meterPointRepo.Setup(r => r.GetByMeterPointNumberAsync("AT006", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(meterPoint);
+        _measurementRepo.Setup(r => r.GetExistingAsync(
+                meterPoint.Id,
+                "community-2",
+                It.IsAny<IEnumerable<DateTimeOffset>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<DateTimeOffset, MeterMeasurement>());
+
+        IEnumerable<MeterMeasurement>? inserted = null;
+        _measurementRepo.Setup(r => r.BulkInsertAsync(It.IsAny<IEnumerable<MeterMeasurement>>(), It.IsAny<CancellationToken>()))
+            .Callback<IEnumerable<MeterMeasurement>, CancellationToken>((measurements, _) => inserted = measurements.ToArray())
+            .Returns(Task.CompletedTask);
+        _measurementRepo.Setup(r => r.UpdateAsync(It.IsAny<IEnumerable<MeterMeasurement>>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var command = new IngestMeasurementsCommand(
+            "community-2",
+            "AT006",
+            [new MeasurementEntry(DateTimeOffset.UtcNow.AddHours(-1), 1m, 0.5m, 0.5m, 0.5m, 0.5m, "EDA")]);
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.Inserted.Should().Be(1);
+        inserted.Should().ContainSingle().Which.CommunityId.Should().Be("community-2");
+        _meterPointRepo.Verify(
+            r => r.EnsureCommunityMembershipAsync(meterPoint.Id, "community-2", It.IsAny<CancellationToken>()),
+            Times.Once);
+        _measurementRepo.Verify(
+            r => r.GetExistingAsync(meterPoint.Id, "community-2", It.IsAny<IEnumerable<DateTimeOffset>>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
     public async Task Handle_WhenDuplicateTimestamps_SkipsDuplicates()
     {
         // Arrange
@@ -116,6 +153,7 @@ public sealed class IngestMeasurementsHandlerTests
             .ReturnsAsync(existingMeterPoint);
         var existing = MeterMeasurement.Reconstitute(
             existingMeterPoint.Id,
+            "community-1",
             ts1,
             1.0m,
             0.5m,
@@ -127,14 +165,14 @@ public sealed class IngestMeasurementsHandlerTests
             DateTimeOffset.UtcNow.AddDays(-2),
             DateTimeOffset.UtcNow.AddDays(-1));
 
-        _measurementRepo.Setup(r => r.GetExistingAsync(existingMeterPoint.Id, It.IsAny<IEnumerable<DateTimeOffset>>(), It.IsAny<CancellationToken>()))
+        _measurementRepo.Setup(r => r.GetExistingAsync(existingMeterPoint.Id, It.IsAny<string>(), It.IsAny<IEnumerable<DateTimeOffset>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Dictionary<DateTimeOffset, MeterMeasurement> { [ts1] = existing });
         _measurementRepo.Setup(r => r.BulkInsertAsync(It.IsAny<IEnumerable<MeterMeasurement>>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         _measurementRepo.Setup(r => r.UpdateAsync(It.IsAny<IEnumerable<MeterMeasurement>>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var command = new IngestMeasurementsCommand("AT003", new[]
+        var command = new IngestMeasurementsCommand("community-1", "AT003", new[]
         {
             new MeasurementEntry(ts1, 1.0m, 0.5m, 0.5m, 0.5m, 0.5m, "EDA"),
             new MeasurementEntry(ts2, 1.0m, 0.5m, 0.5m, 0.5m, 0.5m, "EDA")
@@ -164,6 +202,7 @@ public sealed class IngestMeasurementsHandlerTests
             .ReturnsAsync(existingMeterPoint);
         var existing = MeterMeasurement.Reconstitute(
             existingMeterPoint.Id,
+            "community-1",
             ts,
             1.0m,
             0.5m,
@@ -175,10 +214,10 @@ public sealed class IngestMeasurementsHandlerTests
             DateTimeOffset.UtcNow.AddDays(-40),
             DateTimeOffset.UtcNow.AddDays(-30));
 
-        _measurementRepo.Setup(r => r.GetExistingAsync(existingMeterPoint.Id, It.IsAny<IEnumerable<DateTimeOffset>>(), It.IsAny<CancellationToken>()))
+        _measurementRepo.Setup(r => r.GetExistingAsync(existingMeterPoint.Id, It.IsAny<string>(), It.IsAny<IEnumerable<DateTimeOffset>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Dictionary<DateTimeOffset, MeterMeasurement> { [ts] = existing });
 
-        var command = new IngestMeasurementsCommand("AT004", [new MeasurementEntry(ts, 1.0m, 0.5m, 0.5m, 0.5m, 0.5m, "EDA")]);
+        var command = new IngestMeasurementsCommand("community-1", "AT004", [new MeasurementEntry(ts, 1.0m, 0.5m, 0.5m, 0.5m, 0.5m, "EDA")]);
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -197,6 +236,7 @@ public sealed class IngestMeasurementsHandlerTests
 
         var existing = MeterMeasurement.Reconstitute(
             existingMeterPoint.Id,
+            "community-1",
             timestamp,
             1.0m,
             0.5m,
@@ -210,14 +250,14 @@ public sealed class IngestMeasurementsHandlerTests
 
         _meterPointRepo.Setup(r => r.GetByMeterPointNumberAsync("AT005", It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingMeterPoint);
-        _measurementRepo.Setup(r => r.GetExistingAsync(existingMeterPoint.Id, It.IsAny<IEnumerable<DateTimeOffset>>(), It.IsAny<CancellationToken>()))
+        _measurementRepo.Setup(r => r.GetExistingAsync(existingMeterPoint.Id, It.IsAny<string>(), It.IsAny<IEnumerable<DateTimeOffset>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Dictionary<DateTimeOffset, MeterMeasurement> { [timestamp.ToUniversalTime()] = existing });
         _measurementRepo.Setup(r => r.BulkInsertAsync(It.IsAny<IEnumerable<MeterMeasurement>>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         _measurementRepo.Setup(r => r.UpdateAsync(It.IsAny<IEnumerable<MeterMeasurement>>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var command = new IngestMeasurementsCommand("AT005", [new MeasurementEntry(timestamp, 2.5m, 1.0m, 1.5m, 0.4m, 0.6m, "EDA")]);
+        var command = new IngestMeasurementsCommand("community-1", "AT005", [new MeasurementEntry(timestamp, 2.5m, 1.0m, 1.5m, 0.4m, 0.6m, "EDA")]);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -258,6 +298,7 @@ public sealed class IngestMeasurementsHandlerTests
         dto.Readings[0].TotalConsumptionValue.Should().Be(120.5m);
 
         var command = MeasurementMapper.ToCommand(dto);
+        command.CommunityId.Should().Be(dto.CommunityId);
         command.MeterPointNumber.Should().Be(dto.MeterPointNumber);
         command.Measurements.Should().HaveCount(1);
         command.Measurements[0].GridSharePercent.Should().BeApproximately(0.1718m, 0.0001m);
@@ -288,6 +329,6 @@ public sealed class IngestMeasurementsHandlerTests
                 new DateTimeOffset(2024, 1, 15, 8 + i, 0, 0, TimeSpan.Zero),
                 1.234m, 0.5m, 0.734m, 0.4053m, 0.5947m, "EDA"))
             .ToList();
-        return new IngestMeasurementsCommand(meterPointNumber, entries);
+        return new IngestMeasurementsCommand("community-1", meterPointNumber, entries);
     }
 }

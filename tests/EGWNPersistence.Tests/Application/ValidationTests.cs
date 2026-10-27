@@ -15,7 +15,7 @@ public sealed class ValidationTests
     [Fact]
     public void Validate_ValidCommand_Passes()
     {
-        var command = new IngestMeasurementsCommand("AT001", [ValidEntry()]);
+        var command = new IngestMeasurementsCommand("community-1", "AT001", [ValidEntry()]);
         var result = _validator.Validate(command);
         result.IsValid.Should().BeTrue();
     }
@@ -26,7 +26,7 @@ public sealed class ValidationTests
     [InlineData(null)]
     public void Validate_EmptyMeterPointNumber_Fails(string? mpn)
     {
-        var command = new IngestMeasurementsCommand(mpn!, [ValidEntry()]);
+        var command = new IngestMeasurementsCommand("community-1", mpn!, [ValidEntry()]);
         var result = _validator.Validate(command);
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == "MeterPointNumber");
@@ -35,7 +35,7 @@ public sealed class ValidationTests
     [Fact]
     public void Validate_EmptyMeasurementsList_Fails()
     {
-        var command = new IngestMeasurementsCommand("AT001", []);
+        var command = new IngestMeasurementsCommand("community-1", "AT001", []);
         var result = _validator.Validate(command);
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == "Measurements");
@@ -45,7 +45,7 @@ public sealed class ValidationTests
     public void Validate_NegativeTotalConsumption_Fails()
     {
         var entry = new MeasurementEntry(DateTimeOffset.UtcNow, -1.0m, 0.5m, 0.5m, 0.5m, 0.5m, "EDA");
-        var command = new IngestMeasurementsCommand("AT001", [entry]);
+        var command = new IngestMeasurementsCommand("community-1", "AT001", [entry]);
         var result = _validator.Validate(command);
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName.Contains("TotalConsumption"));
@@ -57,7 +57,7 @@ public sealed class ValidationTests
     public void Validate_InvalidGridSharePercent_Fails(double percent)
     {
         var entry = new MeasurementEntry(DateTimeOffset.UtcNow, 1.0m, 0.5m, 0.5m, (decimal)percent, 0.5m, "EDA");
-        var command = new IngestMeasurementsCommand("AT001", [entry]);
+        var command = new IngestMeasurementsCommand("community-1", "AT001", [entry]);
         var result = _validator.Validate(command);
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName.Contains("GridSharePercent"));
@@ -67,7 +67,7 @@ public sealed class ValidationTests
     public void Validate_EmptySource_Fails()
     {
         var entry = new MeasurementEntry(DateTimeOffset.UtcNow, 1.0m, 0.5m, 0.5m, 0.5m, 0.5m, "");
-        var command = new IngestMeasurementsCommand("AT001", [entry]);
+        var command = new IngestMeasurementsCommand("community-1", "AT001", [entry]);
         var result = _validator.Validate(command);
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName.Contains("Source"));
@@ -77,7 +77,7 @@ public sealed class ValidationTests
     public void Validate_DefaultTimestamp_Fails()
     {
         var entry = ValidEntry(default(DateTimeOffset));
-        var command = new IngestMeasurementsCommand("AT001", [entry]);
+        var command = new IngestMeasurementsCommand("community-1", "AT001", [entry]);
         var result = _validator.Validate(command);
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName.Contains("Timestamp"));
@@ -87,9 +87,21 @@ public sealed class ValidationTests
     public void Validate_MeterPointNumberExceedsMaxLength_Fails()
     {
         var longNumber = new string('A', 101);
-        var command = new IngestMeasurementsCommand(longNumber, [ValidEntry()]);
+        var command = new IngestMeasurementsCommand("community-1", longNumber, [ValidEntry()]);
         var result = _validator.Validate(command);
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == "MeterPointNumber");
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public void Validate_EmptyCommunityId_Fails(string? communityId)
+    {
+        var command = new IngestMeasurementsCommand(communityId!, "AT001", [ValidEntry()]);
+        var result = _validator.Validate(command);
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == "CommunityId");
     }
 }

@@ -108,6 +108,11 @@ namespace EGWNPersistence.Infrastructure.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("meter_id");
 
+                    b.Property<string>("CommunityId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("community_id");
+
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamptz")
                         .HasColumnName("timestamp");
@@ -150,14 +155,42 @@ namespace EGWNPersistence.Infrastructure.Migrations
                         .HasColumnType("timestamptz")
                         .HasColumnName("updated_at");
 
-                    b.HasKey("MeterPointId", "Timestamp");
+                    b.HasKey("MeterPointId", "CommunityId", "Timestamp");
 
-                    b.HasIndex("Timestamp");
-
-                    b.HasIndex("MeterPointId", "Timestamp")
-                        .IsUnique();
+                    b.HasIndex("CommunityId", "MeterPointId", "Timestamp");
 
                     b.ToTable("raw_measurements", (string)null);
+                });
+
+            modelBuilder.Entity("EGWNPersistence.Domain.Entities.MeterPointCommunity", b =>
+                {
+                    b.Property<long>("MeterPointId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("meter_id");
+
+                    b.Property<string>("CommunityId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("community_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.HasKey("MeterPointId", "CommunityId");
+
+                    b.HasIndex("CommunityId");
+
+                    b.ToTable("meter_point_communities", (string)null);
+                });
+
+            modelBuilder.Entity("EGWNPersistence.Domain.Entities.MeterPointCommunity", b =>
+                {
+                    b.HasOne("EGWNPersistence.Domain.Aggregates.MeterPoint", null)
+                        .WithMany()
+                        .HasForeignKey("MeterPointId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

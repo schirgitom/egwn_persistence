@@ -6,6 +6,7 @@ namespace EGWNPersistence.Application.Commands;
 /// Command to ingest a batch of meter measurements from a RabbitMQ message.
 /// </summary>
 public sealed record IngestMeasurementsCommand(
+    string CommunityId,
     string MeterPointNumber,
     IReadOnlyList<MeasurementEntry> Measurements) : IRequest<IngestMeasurementsResult>;
 

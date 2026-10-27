@@ -12,6 +12,7 @@ public class MeterMeasurement
     private MeterMeasurement() { }
 
     public long MeterPointId { get; private set; }
+    public string CommunityId { get; private set; } = string.Empty;
 
     /// <summary>Start of the measurement period (always UTC, hourly granularity).</summary>
     public DateTimeOffset Timestamp { get; private set; }
@@ -81,6 +82,7 @@ public class MeterMeasurement
 
     public static MeterMeasurement Create(
         long meterPointId,
+        string communityId,
         DateTimeOffset timestamp,
         decimal totalConsumption,
         decimal gridShare,
@@ -90,11 +92,13 @@ public class MeterMeasurement
         string source)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
+        ArgumentException.ThrowIfNullOrWhiteSpace(communityId);
 
         var now = DateTimeOffset.UtcNow;
         return new MeterMeasurement
         {
             MeterPointId = meterPointId,
+            CommunityId = communityId.Trim(),
             Timestamp = timestamp.ToUniversalTime(),
             TotalConsumption = totalConsumption,
             GridShare = gridShare,
@@ -111,6 +115,7 @@ public class MeterMeasurement
     /// <summary>Reconstitutes a measurement from the database (for repository use only).</summary>
     public static MeterMeasurement Reconstitute(
         long meterPointId,
+        string communityId,
         DateTimeOffset timestamp,
         decimal totalConsumption,
         decimal gridShare,
@@ -125,6 +130,7 @@ public class MeterMeasurement
         return new MeterMeasurement
         {
             MeterPointId = meterPointId,
+            CommunityId = communityId,
             Timestamp = timestamp,
             TotalConsumption = totalConsumption,
             GridShare = gridShare,

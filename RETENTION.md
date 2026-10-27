@@ -14,9 +14,9 @@
 |---|---|
 | Partition key | `timestamp` |
 | Chunk interval | 1 week |
-| Segment by | `meter_point_id` |
+| Segment by | `community_id, meter_id` |
 | Order by | `timestamp DESC` |
-| Immutability | Append-only — no UPDATEs ever |
+| Correction window | Measurements may be corrected for 21 days; older records are treated as immutable |
 
 ### Why TimescaleDB?
 - Native time-series partitioning (chunks) avoids table bloat
@@ -34,7 +34,7 @@ Raw data is compressed after **7 days**. TimescaleDB converts chunk data from ro
 ALTER TABLE raw_measurements SET (
     timescaledb.compress,
     timescaledb.compress_orderby   = 'timestamp DESC',
-    timescaledb.compress_segmentby = 'meter_point_id'
+    timescaledb.compress_segmentby = 'community_id, meter_id'
 );
 
 SELECT add_compression_policy('raw_measurements', compress_after => INTERVAL '7 days');
@@ -58,15 +58,17 @@ SELECT add_retention_policy('raw_measurements', drop_after => INTERVAL '2 years'
 
 ## Continuous Aggregates (Rollups)
 
+Per-meter and community-wide rollups are grouped by `community_id`; customer-facing queries must retain that filter.
+
 ### Daily Rollups (`daily_rollups`)
 
-- Aggregates per meter point per day: SUM of consumption, average percentages
+- Aggregates per community and meter point per day: SUM of consumption, average percentages
 - Refreshed every **1 hour**, covering the trailing **3 days**
 - Stored as a TimescaleDB continuous aggregate (materialized view)
 
 ### Monthly Rollups (`monthly_rollups`)
 
-- Aggregates per meter point per calendar month
+- Aggregates per community and meter point per calendar month
 - Refreshed every **1 day**, covering the trailing **2 months**
 
 Rollups are **not subject to the 2-year retention** on raw data — they persist indefinitely unless explicitly dropped.
@@ -78,7 +80,9 @@ Rollups are **not subject to the 2-year retention** on raw data — they persist
 The service guarantees at-least-once delivery from RabbitMQ. Duplicate messages are handled at two levels:
 
 1. **Application layer:** `GetExistingTimestampsAsync` filters already-persisted timestamps before attempting insert.
-2. **Database layer:** `PRIMARY KEY (meter_point_id, timestamp)` enforces uniqueness. The COPY-based bulk insert uses `ON CONFLICT DO NOTHING` semantics at the statement level.
+2. **Database layer:** `PRIMARY KEY (meter_id, community_id, timestamp)` enforces uniqueness for each community's meter readings.
+
+Meter points are globally identified by their meter-point number and can belong to multiple communities through `meter_point_communities`.
 
 ---
 
@@ -86,9 +90,10 @@ The service guarantees at-least-once delivery from RabbitMQ. Duplicate messages 
 
 | Table | Index | Purpose |
 |---|---|---|
-| `meter_points` | `uq_meter_points_number` | Fast meter-point resolution by number |
-| `raw_measurements` | `pk_raw_measurements (meter_point_id, timestamp)` | Primary lookup, chunk exclusion |
-| `raw_measurements` | `idx_raw_meas_mp_ts (meter_point_id, timestamp DESC)` | Time-range queries per meter point |
+| `meter_points` | `uq_meter_points_number` | Fast global meter-point resolution |
+| `meter_point_communities` | `(meter_id, community_id)` | Community membership lookup |
+| `raw_measurements` | `pk_raw_measurements (meter_id, community_id, timestamp)` | Unique community-scoped measurement identity |
+| `raw_measurements` | community/meter/timestamp index | Community-filtered time-range queries |
 | `raw_measurements` | `idx_raw_meas_ingested_at (ingested_at DESC)` | Ingestion monitoring, late-arrival detection |
 | `daily_rollups` | `idx_daily_rollups_mp_day` | Dashboard daily queries |
 | `monthly_rollups` | `idx_monthly_rollups_mp_month` | Dashboard monthly queries |
@@ -102,6 +107,9 @@ The service guarantees at-least-once delivery from RabbitMQ. Duplicate messages 
 - **Monitor compression ratio:** `SELECT * FROM chunk_compression_stats('raw_measurements');`
 - **Monitor retention:** `SELECT * FROM timescaledb_information.drop_chunks_policies;`
 - **Continuous aggregate lag:** `SELECT * FROM timescaledb_information.continuous_aggregate_stats;`
+- **Community migration:** apply `db/migrations/006_community_scoped_measurements.sql` (or its EF migration) in a maintenance window, then rerun `db/timescale_continuous_aggregates.sql`. The migration removes old rollups so they cannot return cross-community aggregates.
+- **Legacy data:** existing raw measurements are assigned to community `2OWxVjZ6MMjZzyRB`.
+- **Platform access:** this service does not manage customer accounts or authorization. The platform must authorize the user and filter every query by their allowed communities/meters.
 
 ---
 

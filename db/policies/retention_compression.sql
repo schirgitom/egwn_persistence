@@ -10,7 +10,7 @@
 ALTER TABLE raw_measurements SET (
     timescaledb.compress,
     timescaledb.compress_orderby      = 'timestamp DESC',
-    timescaledb.compress_segmentby    = 'meter_point_id'
+    timescaledb.compress_segmentby = 'community_id, meter_id'
 );
 
 SELECT add_compression_policy(

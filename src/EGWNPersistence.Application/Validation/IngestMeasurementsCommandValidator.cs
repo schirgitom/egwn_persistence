@@ -6,6 +6,12 @@ public sealed class IngestMeasurementsCommandValidator : AbstractValidator<Comma
 {
     public IngestMeasurementsCommandValidator()
     {
+        RuleFor(x => x.CommunityId)
+            .NotEmpty()
+            .WithMessage("CommunityId is required.")
+            .MaximumLength(100)
+            .WithMessage("CommunityId must not exceed 100 characters.");
+
         RuleFor(x => x.MeterPointNumber)
             .NotEmpty()
             .WithMessage("MeterPointNumber is required.")

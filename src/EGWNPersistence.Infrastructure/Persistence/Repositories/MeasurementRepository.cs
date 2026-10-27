@@ -8,6 +8,7 @@ public sealed class MeasurementRepository(EGWNPersistenceDbContext dbContext) : 
 {
     public async Task<IReadOnlyDictionary<DateTimeOffset, MeterMeasurement>> GetExistingAsync(
         long meterPointId,
+        string communityId,
         IEnumerable<DateTimeOffset> timestamps,
         CancellationToken cancellationToken = default)
     {
@@ -16,7 +17,9 @@ public sealed class MeasurementRepository(EGWNPersistenceDbContext dbContext) : 
             return new Dictionary<DateTimeOffset, MeterMeasurement>();
 
         var existing = await dbContext.RawMeasurements
-            .Where(x => x.MeterPointId == meterPointId && tsArray.Contains(x.Timestamp))
+            .Where(x => x.MeterPointId == meterPointId
+                        && x.CommunityId == communityId
+                        && tsArray.Contains(x.Timestamp))
             .ToListAsync(cancellationToken);
 
         return existing.ToDictionary(x => x.Timestamp.ToUniversalTime(), x => x);

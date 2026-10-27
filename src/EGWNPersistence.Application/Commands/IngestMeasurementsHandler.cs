@@ -24,6 +24,8 @@ public sealed class IngestMeasurementsHandler(
 
         try
         {
+            var communityId = request.CommunityId.Trim();
+
             // Resolve or create MeterPoint
             var meterPoint = await unitOfWork.MeterPoints
                 .GetByMeterPointNumberAsync(request.MeterPointNumber, cancellationToken);
@@ -57,12 +59,15 @@ public sealed class IngestMeasurementsHandler(
                     $"MeterPoint '{request.MeterPointNumber}' has invalid ID {meterPoint.Id}. Aborting measurement write.");
             }
 
+            await unitOfWork.MeterPoints.EnsureCommunityMembershipAsync(
+                meterPoint.Id, communityId, cancellationToken);
+
             var incomingTimestamps = request.Measurements
                 .Select(m => m.Timestamp.ToUniversalTime())
                 .ToList();
 
             var existingMeasurements = await unitOfWork.Measurements
-                .GetExistingAsync(meterPoint.Id, incomingTimestamps, cancellationToken);
+                .GetExistingAsync(meterPoint.Id, communityId, incomingTimestamps, cancellationToken);
 
             var newMeasurements = new List<MeterMeasurement>();
             var correctedMeasurements = new List<MeterMeasurement>();
@@ -96,6 +101,7 @@ public sealed class IngestMeasurementsHandler(
 
                 newMeasurements.Add(MeterMeasurement.Create(
                     meterPoint.Id,
+                    communityId,
                     entry.Timestamp,
                     entry.TotalConsumption,
                     entry.GridShare,

@@ -19,4 +19,18 @@ public sealed class MeterPointRepository(EGWNPersistenceDbContext dbContext) : I
     {
         await dbContext.MeterPoints.AddAsync(meterPoint, cancellationToken);
     }
+
+    public async Task EnsureCommunityMembershipAsync(
+        long meterPointId,
+        string communityId,
+        CancellationToken cancellationToken = default)
+    {
+        await dbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"""
+             INSERT INTO meter_point_communities (meter_id, community_id, created_at)
+             VALUES ({meterPointId}, {communityId}, NOW())
+             ON CONFLICT (meter_id, community_id) DO NOTHING
+             """,
+            cancellationToken);
+    }
 }

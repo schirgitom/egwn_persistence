@@ -28,6 +28,6 @@ public static class MeasurementMapper
             })
             .ToList();
 
-        return new IngestMeasurementsCommand(dto.MeterPointNumber, entries);
+        return new IngestMeasurementsCommand(dto.CommunityId, dto.MeterPointNumber, entries);
     }
 }

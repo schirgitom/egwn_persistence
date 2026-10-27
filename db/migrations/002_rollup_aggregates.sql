@@ -12,7 +12,8 @@
 CREATE MATERIALIZED VIEW IF NOT EXISTS daily_rollups
 WITH (timescaledb.continuous) AS
 SELECT
-    meter_point_id,
+    community_id,
+    meter_id,
     time_bucket('1 day', timestamp) AS day,
     SUM(total_consumption)       AS total_consumption,
     SUM(grid_share)              AS grid_share,
@@ -21,7 +22,7 @@ SELECT
     AVG(community_share_percent) AS avg_community_share_percent,
     COUNT(*)                     AS measurement_count
 FROM raw_measurements
-GROUP BY meter_point_id, time_bucket('1 day', timestamp)
+GROUP BY community_id, meter_id, time_bucket('1 day', timestamp)
 WITH NO DATA;
 
 -- Refresh policy: refresh trailing 3 days, run every hour
@@ -43,7 +44,8 @@ COMMENT ON MATERIALIZED VIEW daily_rollups IS
 CREATE MATERIALIZED VIEW IF NOT EXISTS monthly_rollups
 WITH (timescaledb.continuous) AS
 SELECT
-    meter_point_id,
+    community_id,
+    meter_id,
     time_bucket('1 month', timestamp) AS month,
     SUM(total_consumption)       AS total_consumption,
     SUM(grid_share)              AS grid_share,
@@ -52,7 +54,7 @@ SELECT
     AVG(community_share_percent) AS avg_community_share_percent,
     COUNT(*)                     AS measurement_count
 FROM raw_measurements
-GROUP BY meter_point_id, time_bucket('1 month', timestamp)
+GROUP BY community_id, meter_id, time_bucket('1 month', timestamp)
 WITH NO DATA;
 
 -- Refresh policy: refresh trailing 2 months, run every day
@@ -71,7 +73,7 @@ COMMENT ON MATERIALIZED VIEW monthly_rollups IS
 -- Indexes on continuous aggregates
 -- =============================================================================
 CREATE INDEX IF NOT EXISTS idx_daily_rollups_mp_day
-    ON daily_rollups (meter_point_id, day DESC);
+    ON daily_rollups (community_id, meter_id, day DESC);
 
 CREATE INDEX IF NOT EXISTS idx_monthly_rollups_mp_month
-    ON monthly_rollups (meter_point_id, month DESC);
+    ON monthly_rollups (community_id, meter_id, month DESC);
