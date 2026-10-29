@@ -78,7 +78,7 @@ namespace EGWNPersistence.Infrastructure.Migrations
                 WHERE community_id IS NULL;
 
                 INSERT INTO meter_point_communities (meter_id, community_id, created_at)
-                SELECT id, '2OWxVjZ6MMjZzyRB', NOW()
+                SELECT "Id", '2OWxVjZ6MMjZzyRB', NOW()
                 FROM meter_points
                 ON CONFLICT (meter_id, community_id) DO NOTHING;
                 """);
