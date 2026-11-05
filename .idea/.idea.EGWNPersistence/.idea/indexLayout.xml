@@ -3,6 +3,7 @@
   <component name="UserContentModel">
     <attachedFolders>
       <Path>db</Path>
+      <Path>grafana</Path>
     </attachedFolders>
     <explicitIncludes />
     <explicitExcludes />

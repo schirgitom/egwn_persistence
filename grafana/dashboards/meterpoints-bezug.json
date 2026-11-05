@@ -1,0 +1,1973 @@
+{
+  "apiVersion": "dashboard.grafana.app/v2",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "egwn-meterpoints-bezug"
+  },
+  "spec": {
+    "title": "EGWN – Zählpunkte Bezug",
+    "description": "Stündliche, gemeinschaftsspezifische Messwerte aus EGWNPersistence; aktive Zählpunkte aus EGWNCentralAPI.",
+    "editable": true,
+    "cursorSync": "Crosshair",
+    "annotations": [],
+    "links": [],
+    "liveNow": false,
+    "preload": false,
+    "elements": {
+      "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "id": 1,
+          "title": "Verbrauch",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT SUM(r.total_consumption) AS \"Verbrauch\"\nFROM raw_measurements r\nJOIN meter_points mp ON mp.\"Id\" = r.meter_id\nWHERE $__timeFilter(r.timestamp)\n  AND r.community_id = ${community:sqlstring}\n  AND mp.meter_point_number IN (${meterPoint:sqlstring})"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "kwatth",
+                  "decimals": 1,
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "purple"
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "panel-2": {
+        "kind": "Panel",
+        "spec": {
+          "id": 2,
+          "title": "Netzbezug",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT SUM(r.grid_share) AS \"Netzbezug\"\nFROM raw_measurements r\nJOIN meter_points mp ON mp.\"Id\" = r.meter_id\nWHERE $__timeFilter(r.timestamp)\n  AND r.community_id = ${community:sqlstring}\n  AND mp.meter_point_number IN (${meterPoint:sqlstring})"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "kwatth",
+                  "decimals": 1,
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "red"
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "id": 3,
+          "title": "Bezug aus EG",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT SUM(r.community_share) AS \"Bezug aus EG\"\nFROM raw_measurements r\nJOIN meter_points mp ON mp.\"Id\" = r.meter_id\nWHERE $__timeFilter(r.timestamp)\n  AND r.community_id = ${community:sqlstring}\n  AND mp.meter_point_number IN (${meterPoint:sqlstring})"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "kwatth",
+                  "decimals": 1,
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "green"
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "panel-4": {
+        "kind": "Panel",
+        "spec": {
+          "id": 4,
+          "title": "EG-Deckungsgrad",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT SUM(r.community_share) / NULLIF(SUM(r.total_consumption), 0) AS \"EG-Deckungsgrad\"\nFROM raw_measurements r\nJOIN meter_points mp ON mp.\"Id\" = r.meter_id\nWHERE $__timeFilter(r.timestamp)\n  AND r.community_id = ${community:sqlstring}\n  AND mp.meter_point_number IN (${meterPoint:sqlstring})"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percentunit",
+                  "decimals": 1,
+                  "min": 0,
+                  "max": 1,
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "red",
+                        "value": 0
+                      },
+                      {
+                        "color": "orange",
+                        "value": 0.2
+                      },
+                      {
+                        "color": "green",
+                        "value": 0.6
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "panel-13": {
+        "kind": "Panel",
+        "spec": {
+          "id": 13,
+          "title": "Spitzenlast",
+          "description": "Höchste gemeinsame Stundenleistung (stündliche kWh entsprechen mittleren kW).",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT MAX(power_kw) AS \"Spitzenleistung\"\nFROM (SELECT r.timestamp, SUM(r.total_consumption) AS power_kw\n      FROM raw_measurements r\nJOIN meter_points mp ON mp.\"Id\" = r.meter_id\nWHERE $__timeFilter(r.timestamp)\n  AND r.community_id = ${community:sqlstring}\n  AND mp.meter_point_number IN (${meterPoint:sqlstring}) GROUP BY r.timestamp) hours"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "kwatt",
+                  "decimals": 2,
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "orange"
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "panel-14": {
+        "kind": "Panel",
+        "spec": {
+          "id": 14,
+          "title": "Anteil an allen Bezügern",
+          "description": "Anteil der gewählten Zählpunkte an den aktiven Zählpunkten dieser Richtung in der gewählten Gemeinschaft.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT SUM(r.total_consumption) FILTER (WHERE mp.meter_point_number IN (${meterPoint:sqlstring}))\n       / NULLIF(SUM(r.total_consumption), 0) AS \"Anteil\"\nFROM raw_measurements r\nJOIN meter_points mp ON mp.\"Id\" = r.meter_id\nWHERE $__timeFilter(r.timestamp)\n  AND r.community_id = ${community:sqlstring}\n  AND mp.meter_point_number IN (${allMeters:sqlstring})"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percentunit",
+                  "decimals": 1,
+                  "min": 0,
+                  "max": 1,
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "blue"
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "panel-6": {
+        "kind": "Panel",
+        "spec": {
+          "id": 6,
+          "title": "Verbrauch – Netzbezug vs. Bezug aus EG",
+          "description": "kWh je Intervall; fehlende Stunden bleiben Lücken. Bei langen Zeiträumen werden die Daten gruppiert.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "time_series",
+                        "rawQuery": true,
+                        "rawSql": "SELECT $__timeGroupAlias(r.timestamp, $__interval),\n       SUM(r.grid_share) AS \"Netzbezug\", SUM(r.community_share) AS \"Bezug aus EG\"\nFROM raw_measurements r\nJOIN meter_points mp ON mp.\"Id\" = r.meter_id\nWHERE $__timeFilter(r.timestamp)\n  AND r.community_id = ${community:sqlstring}\n  AND mp.meter_point_number IN (${meterPoint:sqlstring}) GROUP BY 1 ORDER BY 1"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "kwatth",
+                  "custom": {
+                    "drawStyle": "bars",
+                    "fillOpacity": 90,
+                    "lineWidth": 0,
+                    "showPoints": "auto",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "normal"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Netzbezug"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "red"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Bezug aus EG"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "green"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              }
+            }
+          }
+        }
+      },
+      "panel-7": {
+        "kind": "Panel",
+        "spec": {
+          "id": 7,
+          "title": "EG-Deckungsgrad im Verlauf",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "time_series",
+                        "rawQuery": true,
+                        "rawSql": "SELECT $__timeGroupAlias(r.timestamp, $__interval),\n       SUM(r.community_share) / NULLIF(SUM(r.total_consumption), 0) AS \"EG-Deckungsgrad\"\nFROM raw_measurements r\nJOIN meter_points mp ON mp.\"Id\" = r.meter_id\nWHERE $__timeFilter(r.timestamp)\n  AND r.community_id = ${community:sqlstring}\n  AND mp.meter_point_number IN (${meterPoint:sqlstring}) GROUP BY 1 ORDER BY 1"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percentunit",
+                  "custom": {
+                    "drawStyle": "line",
+                    "fillOpacity": 12,
+                    "lineWidth": 2,
+                    "showPoints": "auto",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    }
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "green"
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              }
+            }
+          }
+        }
+      },
+      "panel-16": {
+        "kind": "Panel",
+        "spec": {
+          "id": 16,
+          "title": "Leistung – Mittel und Maximum je Intervall",
+          "description": "Durchschnitt und Maximum der gemeinsamen stündlichen Leistung; keine Viertelstundenwerte.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "time_series",
+                        "rawQuery": true,
+                        "rawSql": "WITH hours AS (\n  SELECT r.timestamp, SUM(r.total_consumption) AS power_kw\n  FROM raw_measurements r\nJOIN meter_points mp ON mp.\"Id\" = r.meter_id\nWHERE $__timeFilter(r.timestamp)\n  AND r.community_id = ${community:sqlstring}\n  AND mp.meter_point_number IN (${meterPoint:sqlstring}) GROUP BY r.timestamp\n)\nSELECT $__timeGroupAlias(timestamp, $__interval),\n       AVG(power_kw) AS \"Ø Leistung\", MAX(power_kw) AS \"Max. Leistung\"\nFROM hours GROUP BY 1 ORDER BY 1"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "kwatt",
+                  "custom": {
+                    "drawStyle": "line",
+                    "fillOpacity": 12,
+                    "lineWidth": 2,
+                    "showPoints": "auto",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Ø Leistung"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "blue"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Max. Leistung"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "orange"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              }
+            }
+          }
+        }
+      },
+      "panel-17": {
+        "kind": "Panel",
+        "spec": {
+          "id": 17,
+          "title": "Tägliche Spitzen- und Durchschnittsleistung",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "time_series",
+                        "rawQuery": true,
+                        "rawSql": "WITH hours AS (\n  SELECT r.timestamp, SUM(r.total_consumption) AS power_kw\n  FROM raw_measurements r\nJOIN meter_points mp ON mp.\"Id\" = r.meter_id\nWHERE $__timeFilter(r.timestamp)\n  AND r.community_id = ${community:sqlstring}\n  AND mp.meter_point_number IN (${meterPoint:sqlstring}) GROUP BY r.timestamp\n)\nSELECT (date_trunc('day', timestamp AT TIME ZONE 'Europe/Vienna') AT TIME ZONE 'Europe/Vienna') AS \"time\",\n       MAX(power_kw) AS \"Spitzenleistung\", AVG(power_kw) AS \"Ø Leistung\"\nFROM hours GROUP BY 1 ORDER BY 1"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "kwatt",
+                  "custom": {
+                    "drawStyle": "line",
+                    "fillOpacity": 12,
+                    "lineWidth": 2,
+                    "showPoints": "auto",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Spitzenleistung"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "orange"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Ø Leistung"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "blue"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              }
+            }
+          }
+        }
+      },
+      "panel-10": {
+        "kind": "Panel",
+        "spec": {
+          "id": 10,
+          "title": "Ø Stundenprofil – Netzbezug vs. Bezug aus EG",
+          "description": "Mittlere stündliche Leistung nach Wiener Ortszeit; die doppelte Stunde bei Winterzeit wird gemittelt.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "WITH hours AS (\n  SELECT r.timestamp, SUM(r.grid_share) AS grid_kw, SUM(r.community_share) AS community_kw\n  FROM raw_measurements r\nJOIN meter_points mp ON mp.\"Id\" = r.meter_id\nWHERE $__timeFilter(r.timestamp)\n  AND r.community_id = ${community:sqlstring}\n  AND mp.meter_point_number IN (${meterPoint:sqlstring}) GROUP BY r.timestamp\n)\nSELECT to_char(timestamp AT TIME ZONE 'Europe/Vienna', 'HH24:00') AS \"Uhrzeit\",\n       AVG(grid_kw) AS \"Netzbezug\", AVG(community_kw) AS \"Bezug aus EG\"\nFROM hours GROUP BY 1 ORDER BY 1"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "barchart",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "kwatt",
+                  "custom": {
+                    "fillOpacity": 85,
+                    "axisLabel": "kW"
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Netzbezug"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "red"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Bezug aus EG"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "green"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc"
+                },
+                "xField": "Uhrzeit",
+                "orientation": "vertical",
+                "stacking": "normal"
+              }
+            }
+          }
+        }
+      },
+      "panel-18": {
+        "kind": "Panel",
+        "spec": {
+          "id": 18,
+          "title": "Ø Stundenprofil – Werktag vs. Wochenende",
+          "description": "Feiertage zählen als Werktage.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "WITH hours AS (\n  SELECT r.timestamp, SUM(r.total_consumption) AS power_kw\n  FROM raw_measurements r\nJOIN meter_points mp ON mp.\"Id\" = r.meter_id\nWHERE $__timeFilter(r.timestamp)\n  AND r.community_id = ${community:sqlstring}\n  AND mp.meter_point_number IN (${meterPoint:sqlstring}) GROUP BY r.timestamp\n)\nSELECT to_char(timestamp AT TIME ZONE 'Europe/Vienna', 'HH24:00') AS \"Uhrzeit\",\n       AVG(power_kw) FILTER (WHERE EXTRACT(ISODOW FROM timestamp AT TIME ZONE 'Europe/Vienna') < 6) AS \"Werktag\",\n       AVG(power_kw) FILTER (WHERE EXTRACT(ISODOW FROM timestamp AT TIME ZONE 'Europe/Vienna') >= 6) AS \"Wochenende\"\nFROM hours GROUP BY 1 ORDER BY 1"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "barchart",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "kwatt",
+                  "custom": {
+                    "fillOpacity": 85,
+                    "axisLabel": "kW"
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Werktag"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "blue"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Wochenende"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "orange"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc"
+                },
+                "xField": "Uhrzeit",
+                "orientation": "vertical",
+                "stacking": "none"
+              }
+            }
+          }
+        }
+      },
+      "panel-19": {
+        "kind": "Panel",
+        "spec": {
+          "id": 19,
+          "title": "Lastdauerlinie",
+          "description": "Absteigende Stundenleistung; X zählt tatsächlich vorhandene Stunden.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "WITH hours AS (\n  SELECT r.timestamp, SUM(r.total_consumption) AS power_kw\n  FROM raw_measurements r\nJOIN meter_points mp ON mp.\"Id\" = r.meter_id\nWHERE $__timeFilter(r.timestamp)\n  AND r.community_id = ${community:sqlstring}\n  AND mp.meter_point_number IN (${meterPoint:sqlstring}) GROUP BY r.timestamp\n)\nSELECT ROW_NUMBER() OVER (ORDER BY power_kw DESC) AS \"Stunden\",\n       power_kw AS \"Leistung\"\nFROM hours ORDER BY 1"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "xychart",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "kwatt",
+                  "color": {
+                    "mode": "fixed",
+                    "fixedColor": "orange"
+                  },
+                  "custom": {
+                    "show": "lines",
+                    "lineWidth": 2
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "mapping": "auto",
+                "series": [
+                  {}
+                ]
+              }
+            }
+          }
+        }
+      },
+      "panel-20": {
+        "kind": "Panel",
+        "spec": {
+          "id": 20,
+          "title": "Vergleich mit Vorwoche (−7 Tage)",
+          "description": "Stündliche Rohwerte; verschiebt die Vorwoche um exakt sieben Tage.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "time_series",
+                        "rawQuery": true,
+                        "rawSql": "SELECT $__timeGroupAlias(r.timestamp, $__interval), SUM(r.total_consumption) AS \"Aktuell\"\nFROM raw_measurements r\nJOIN meter_points mp ON mp.\"Id\" = r.meter_id\nWHERE $__timeFilter(r.timestamp)\n  AND r.community_id = ${community:sqlstring}\n  AND mp.meter_point_number IN (${meterPoint:sqlstring}) GROUP BY 1 ORDER BY 1"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "B",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "time_series",
+                        "rawQuery": true,
+                        "rawSql": "SELECT $__timeGroupAlias(r.timestamp + INTERVAL '7 days', $__interval),\n       SUM(r.total_consumption) AS \"Vorwoche\"\nFROM raw_measurements r JOIN meter_points mp ON mp.\"Id\" = r.meter_id\nWHERE r.timestamp >= $__timeFrom()::timestamptz - INTERVAL '7 days'\n  AND r.timestamp < $__timeTo()::timestamptz - INTERVAL '7 days'\n  AND r.community_id = ${community:sqlstring}\n  AND mp.meter_point_number IN (${meterPoint:sqlstring})\nGROUP BY 1 ORDER BY 1"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "kwatth",
+                  "custom": {
+                    "drawStyle": "line",
+                    "fillOpacity": 12,
+                    "lineWidth": 2,
+                    "showPoints": "auto",
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    }
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Aktuell"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "blue"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Vorwoche"
+                    },
+                    "properties": [
+                      {
+                        "id": "color",
+                        "value": {
+                          "mode": "fixed",
+                          "fixedColor": "orange"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              }
+            }
+          }
+        }
+      },
+      "panel-12": {
+        "kind": "Panel",
+        "spec": {
+          "id": 12,
+          "title": "Datenqualität je Zählpunkt",
+          "description": "Erwartet: UTC-Stunden im gewählten Zeitraum bis jetzt (Sommer-/Winterzeit korrekt). Bei Einspeisern sind Nullwerte nachts normal.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT mp.meter_point_number AS \"Zählpunkt\",\n       COUNT(r.timestamp) AS \"Datensätze\",\n       COUNT(r.timestamp)::numeric / NULLIF((\n         SELECT COUNT(*) FROM generate_series(\n           date_trunc('hour', $__timeFrom()::timestamptz),\n           LEAST(NOW(), $__timeTo()::timestamptz),\n           INTERVAL '1 hour') slot\n         WHERE slot >= $__timeFrom()::timestamptz\n           AND slot < LEAST(NOW(), $__timeTo()::timestamptz)\n       ), 0) AS \"Vollständigkeit\",\n       COUNT(*) FILTER (WHERE r.total_consumption = 0) AS \"Nullwerte\",\n       COUNT(*) FILTER (WHERE ABS(r.grid_share + r.community_share - r.total_consumption) > 0.001) AS \"Inkonsistent\",\n       SUM(r.total_consumption) AS \"Verbrauch\",\n       SUM(r.community_share) / NULLIF(SUM(r.total_consumption), 0) AS \"EG-Deckungsgrad\",\n       MAX(r.timestamp) AS \"Letzter Datensatz\",\n       EXTRACT(EPOCH FROM (NOW() - MAX(r.timestamp))) / 3600 AS \"Alter (h)\"\nFROM meter_points mp\nJOIN meter_point_communities mc ON mc.meter_id = mp.\"Id\"\n  AND mc.community_id = ${community:sqlstring}\nLEFT JOIN raw_measurements r ON r.meter_id = mp.\"Id\"\n  AND r.community_id = ${community:sqlstring} AND $__timeFilter(r.timestamp)\nWHERE mp.meter_point_number IN (${meterPoint:sqlstring})\nGROUP BY mp.meter_point_number ORDER BY \"Alter (h)\" DESC NULLS FIRST"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Vollständigkeit"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percentunit"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "EG-Deckungsgrad"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percentunit"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Verbrauch"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "kwatth"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "showHeader": true
+              }
+            }
+          }
+        }
+      },
+      "panel-22": {
+        "kind": "Panel",
+        "spec": {
+          "id": 22,
+          "title": "Top 10 Lastspitzen",
+          "description": "Stunden mit der höchsten gemeinsamen Leistung.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT r.timestamp AS \"Zeitpunkt\",\n       SUM(r.total_consumption) AS \"Leistung\",\n       SUM(r.community_share) / NULLIF(SUM(r.total_consumption), 0) AS \"EG-Deckungsgrad\"\nFROM raw_measurements r\nJOIN meter_points mp ON mp.\"Id\" = r.meter_id\nWHERE $__timeFilter(r.timestamp)\n  AND r.community_id = ${community:sqlstring}\n  AND mp.meter_point_number IN (${meterPoint:sqlstring}) GROUP BY r.timestamp ORDER BY 2 DESC LIMIT 10"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Leistung"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "kwatt"
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "EG-Deckungsgrad"
+                    },
+                    "properties": [
+                      {
+                        "id": "unit",
+                        "value": "percentunit"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "options": {
+                "showHeader": true
+              }
+            }
+          }
+        }
+      },
+      "panel-11": {
+        "kind": "Panel",
+        "spec": {
+          "id": 11,
+          "title": "Stündliche Leistung nach Tageszeit",
+          "description": "Jede Zeile eine Wiener Ortsstunde, jede Spalte ein Tag. Leere Zellen sind fehlende Messwerte; doppelte Winterzeit-Stunden werden summiert.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "time_series",
+                        "rawQuery": true,
+                        "rawSql": "WITH hours AS (\n  SELECT (r.timestamp AT TIME ZONE 'Europe/Vienna')::date AS local_date,\n         EXTRACT(HOUR FROM r.timestamp AT TIME ZONE 'Europe/Vienna')::int AS local_hour,\n         SUM(r.total_consumption) AS power_kw\n  FROM raw_measurements r\nJOIN meter_points mp ON mp.\"Id\" = r.meter_id\nWHERE $__timeFilter(r.timestamp)\n  AND r.community_id = ${community:sqlstring}\n  AND mp.meter_point_number IN (${meterPoint:sqlstring}) GROUP BY 1, 2\n)\nSELECT (d.local_day AT TIME ZONE 'Europe/Vienna') AS \"time\",\n       to_char(TIME '00:00' + n * INTERVAL '1 hour', 'HH24:00') AS metric,\n       h.power_kw AS value\nFROM generate_series(\n  date_trunc('day', $__timeFrom()::timestamptz AT TIME ZONE 'Europe/Vienna'),\n  date_trunc('day', $__timeTo()::timestamptz AT TIME ZONE 'Europe/Vienna'),\n  INTERVAL '1 day') AS d(local_day)\nCROSS JOIN generate_series(0, 23) AS n\nLEFT JOIN hours h ON h.local_date = d.local_day::date AND h.local_hour = n\nORDER BY 1, 2"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "status-history",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "kwatt",
+                  "color": {
+                    "mode": "continuous-GrYlRd"
+                  },
+                  "decimals": 2
+                },
+                "overrides": []
+              },
+              "options": {
+                "showValue": "never",
+                "rowHeight": 0.9,
+                "colWidth": 0.9,
+                "legend": {
+                  "showLegend": true,
+                  "displayMode": "list",
+                  "placement": "bottom"
+                }
+              }
+            }
+          }
+        }
+      },
+      "panel-21": {
+        "kind": "Panel",
+        "spec": {
+          "id": 21,
+          "title": "Datenvollständigkeit je Tag",
+          "description": "Gelieferte / erwartete Stunden je Wiener Kalendertag; 23/25 Stunden bei Zeitumstellung, nur bereits vergangene Stunden am aktuellen Tag.",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "refId": "A",
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bfywptosighs0b"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": "time_series",
+                        "rawQuery": true,
+                        "rawSql": "SELECT (d.local_day AT TIME ZONE 'Europe/Vienna') AS \"time\",\n       mp.meter_point_number AS metric,\n       COUNT(r.timestamp)::numeric / NULLIF((\n         SELECT COUNT(*) FROM generate_series(\n           d.local_day AT TIME ZONE 'Europe/Vienna',\n           (d.local_day + INTERVAL '1 day') AT TIME ZONE 'Europe/Vienna',\n           INTERVAL '1 hour') slot\n         WHERE slot >= $__timeFrom()::timestamptz\n           AND slot < LEAST(NOW(), $__timeTo()::timestamptz)\n           AND slot < (d.local_day + INTERVAL '1 day') AT TIME ZONE 'Europe/Vienna'\n       ), 0) AS value\nFROM generate_series(\n  date_trunc('day', $__timeFrom()::timestamptz AT TIME ZONE 'Europe/Vienna'),\n  date_trunc('day', $__timeTo()::timestamptz AT TIME ZONE 'Europe/Vienna'),\n  INTERVAL '1 day') AS d(local_day)\nCROSS JOIN meter_points mp\nJOIN meter_point_communities mc ON mc.meter_id = mp.\"Id\"\n  AND mc.community_id = ${community:sqlstring}\nLEFT JOIN raw_measurements r ON r.meter_id = mp.\"Id\"\n  AND r.community_id = ${community:sqlstring}\n  AND r.timestamp >= (d.local_day AT TIME ZONE 'Europe/Vienna')\n  AND r.timestamp < ((d.local_day + INTERVAL '1 day') AT TIME ZONE 'Europe/Vienna')\n  AND $__timeFilter(r.timestamp)\nWHERE mp.meter_point_number IN (${meterPoint:sqlstring})\nGROUP BY d.local_day, mp.meter_point_number ORDER BY 1, 2"
+                      }
+                    }
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "status-history",
+            "version": "13.2.2",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percentunit",
+                  "decimals": 0,
+                  "min": 0,
+                  "max": 1,
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "red",
+                        "value": 0
+                      },
+                      {
+                        "color": "orange",
+                        "value": 0.9
+                      },
+                      {
+                        "color": "green",
+                        "value": 0.99
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "showValue": "never",
+                "rowHeight": 0.9,
+                "colWidth": 0.9,
+                "legend": {
+                  "showLegend": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "layout": {
+      "kind": "GridLayout",
+      "spec": {
+        "items": [
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-1"
+              },
+              "x": 0,
+              "y": 0,
+              "width": 4,
+              "height": 4
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-2"
+              },
+              "x": 4,
+              "y": 0,
+              "width": 4,
+              "height": 4
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-3"
+              },
+              "x": 8,
+              "y": 0,
+              "width": 4,
+              "height": 4
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-4"
+              },
+              "x": 12,
+              "y": 0,
+              "width": 4,
+              "height": 4
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-13"
+              },
+              "x": 16,
+              "y": 0,
+              "width": 4,
+              "height": 4
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-14"
+              },
+              "x": 20,
+              "y": 0,
+              "width": 4,
+              "height": 4
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-6"
+              },
+              "x": 0,
+              "y": 4,
+              "width": 12,
+              "height": 9
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-7"
+              },
+              "x": 12,
+              "y": 4,
+              "width": 12,
+              "height": 9
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-16"
+              },
+              "x": 0,
+              "y": 13,
+              "width": 12,
+              "height": 9
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-17"
+              },
+              "x": 12,
+              "y": 13,
+              "width": 12,
+              "height": 9
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-10"
+              },
+              "x": 0,
+              "y": 22,
+              "width": 12,
+              "height": 9
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-18"
+              },
+              "x": 12,
+              "y": 22,
+              "width": 12,
+              "height": 9
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-19"
+              },
+              "x": 0,
+              "y": 42,
+              "width": 12,
+              "height": 9
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-20"
+              },
+              "x": 12,
+              "y": 42,
+              "width": 12,
+              "height": 9
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-12"
+              },
+              "x": 0,
+              "y": 51,
+              "width": 15,
+              "height": 9
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-22"
+              },
+              "x": 15,
+              "y": 51,
+              "width": 9,
+              "height": 9
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-11"
+              },
+              "x": 0,
+              "y": 31,
+              "width": 24,
+              "height": 11
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-21"
+              },
+              "x": 0,
+              "y": 60,
+              "width": 24,
+              "height": 7
+            }
+          }
+        ]
+      }
+    },
+    "tags": [
+      "egwn",
+      "meterpoints",
+      "bezug"
+    ],
+    "timeSettings": {
+      "from": "now-7d",
+      "to": "now",
+      "timezone": "Europe/Vienna",
+      "autoRefresh": "5m",
+      "autoRefreshIntervals": [
+        "1m",
+        "5m",
+        "15m",
+        "1h",
+        "1d"
+      ],
+      "weekStart": "monday",
+      "fiscalYearStartMonth": 0,
+      "hideTimepicker": false
+    },
+    "variables": [
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "community",
+          "label": "Energiegemeinschaft",
+          "hide": "dontHide",
+          "multi": false,
+          "includeAll": false,
+          "allowCustomValue": false,
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "options": [],
+          "refresh": "onDashboardLoad",
+          "sort": "disabled",
+          "regex": "",
+          "regexApplyTo": "value",
+          "skipUrlSync": false,
+          "definition": "",
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana-postgresql-datasource",
+            "version": "v0",
+            "datasource": {
+              "name": "bfz0tx8cvxszkc"
+            },
+            "spec": {
+              "editorMode": "code",
+              "format": "table",
+              "rawSql": "SELECT ec.\"Name\" AS __text, ec.\"Quelle\" AS __value\nFROM \"EnergyCommunities\" ec\nWHERE NOT ec.\"IsDeleted\"\n  AND NULLIF(ec.\"Quelle\", '') IS NOT NULL\nORDER BY 1, 2",
+              "refId": "SQLVariableQueryEditor-VariableQuery"
+            }
+          }
+        }
+      },
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "communityMeters",
+          "label": "Zählpunkte der Energiegemeinschaft",
+          "hide": "hideVariable",
+          "multi": true,
+          "includeAll": true,
+          "allowCustomValue": false,
+          "current": {
+            "text": [
+              "All"
+            ],
+            "value": [
+              "$__all"
+            ]
+          },
+          "options": [],
+          "refresh": "onDashboardLoad",
+          "sort": "disabled",
+          "regex": "",
+          "regexApplyTo": "value",
+          "skipUrlSync": true,
+          "definition": "",
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana-postgresql-datasource",
+            "version": "v0",
+            "datasource": {
+              "name": "bfywptosighs0b"
+            },
+            "spec": {
+              "editorMode": "code",
+              "format": "table",
+              "rawSql": "SELECT mp.meter_point_number AS __text, mp.meter_point_number AS __value\nFROM meter_point_communities mc\nJOIN meter_points mp ON mp.\"Id\" = mc.meter_id\nWHERE mc.community_id = ${community:sqlstring}\nUNION ALL\nSELECT '__egwn_no_meter_points__', '__egwn_no_meter_points__'",
+              "refId": "SQLVariableQueryEditor-VariableQuery"
+            }
+          }
+        }
+      },
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "meterPoint",
+          "label": "Zählpunkt",
+          "hide": "dontHide",
+          "multi": true,
+          "includeAll": true,
+          "allowCustomValue": false,
+          "current": {
+            "text": [
+              "All"
+            ],
+            "value": [
+              "$__all"
+            ]
+          },
+          "options": [],
+          "refresh": "onDashboardLoad",
+          "sort": "disabled",
+          "regex": "",
+          "regexApplyTo": "value",
+          "skipUrlSync": false,
+          "definition": "",
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana-postgresql-datasource",
+            "version": "v0",
+            "datasource": {
+              "name": "bfz0tx8cvxszkc"
+            },
+            "spec": {
+              "editorMode": "code",
+              "format": "table",
+              "rawSql": "SELECT COALESCE(\n         (SELECT string_agg(DISTINCT c.\"Name\", ', ' ORDER BY c.\"Name\")\n          FROM \"CustomerMeteringPoints\" cm\n          JOIN \"Customers\" c ON c.\"Id\" = cm.\"CustomerId\" AND NOT c.\"IsDeleted\"\n          WHERE cm.\"MeteringPointId\" = mp.\"Id\"), 'Ohne Kunde')\n       || COALESCE(' – ' || NULLIF(mp.\"Description\", ''), '')\n       || ' (…' || RIGHT(mp.\"MeteringPointCode\", 6) || ')' AS __text,\n       mp.\"MeteringPointCode\" AS __value\nFROM \"MeteringPoints\" mp\nWHERE NOT mp.\"IsDeleted\" AND lower(mp.\"EnergyDirection\") = 'consumption'\n  AND mp.\"MeteringPointCode\" IN (${communityMeters:sqlstring})\nORDER BY 1, 2",
+              "refId": "SQLVariableQueryEditor-VariableQuery"
+            }
+          }
+        }
+      },
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "allMeters",
+          "label": "Alle Zählpunkte dieser Richtung",
+          "hide": "hideVariable",
+          "multi": true,
+          "includeAll": true,
+          "allowCustomValue": false,
+          "current": {
+            "text": [
+              "All"
+            ],
+            "value": [
+              "$__all"
+            ]
+          },
+          "options": [],
+          "refresh": "onDashboardLoad",
+          "sort": "disabled",
+          "regex": "",
+          "regexApplyTo": "value",
+          "skipUrlSync": true,
+          "definition": "",
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana-postgresql-datasource",
+            "version": "v0",
+            "datasource": {
+              "name": "bfz0tx8cvxszkc"
+            },
+            "spec": {
+              "editorMode": "code",
+              "format": "table",
+              "rawSql": "SELECT COALESCE(\n         (SELECT string_agg(DISTINCT c.\"Name\", ', ' ORDER BY c.\"Name\")\n          FROM \"CustomerMeteringPoints\" cm\n          JOIN \"Customers\" c ON c.\"Id\" = cm.\"CustomerId\" AND NOT c.\"IsDeleted\"\n          WHERE cm.\"MeteringPointId\" = mp.\"Id\"), 'Ohne Kunde')\n       || COALESCE(' – ' || NULLIF(mp.\"Description\", ''), '')\n       || ' (…' || RIGHT(mp.\"MeteringPointCode\", 6) || ')' AS __text,\n       mp.\"MeteringPointCode\" AS __value\nFROM \"MeteringPoints\" mp\nWHERE NOT mp.\"IsDeleted\" AND lower(mp.\"EnergyDirection\") = 'consumption'\n  AND mp.\"MeteringPointCode\" IN (${communityMeters:sqlstring})\nORDER BY 1, 2",
+              "refId": "SQLVariableQueryEditor-VariableQuery"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
