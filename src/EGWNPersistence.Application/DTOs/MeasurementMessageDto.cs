@@ -13,6 +13,9 @@ public sealed class MeterReadingMessageDto
     [JsonPropertyName("communityId")]
     public string CommunityId { get; init; } = string.Empty;
 
+    [JsonPropertyName("energyDirection")]
+    public string? EnergyDirection { get; init; }
+
     [JsonPropertyName("createdAtUtc")]
     public DateTimeOffset CreatedAtUtc { get; init; }
 

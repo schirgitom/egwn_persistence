@@ -16,6 +16,7 @@ public sealed class MeasurementMessageDeserializationTests
             {
               "meterPointNumber": "AT001234567890",
               "communityId": "2OWxVjZ6MMjZzyRB",
+              "energyDirection": "generation",
               "createdAtUtc": "2026-08-30T13:04:52Z",
               "readings": [
                 {
@@ -33,6 +34,7 @@ public sealed class MeasurementMessageDeserializationTests
         dto.Should().NotBeNull();
         dto!.MeterPointNumber.Should().Be("AT001234567890");
         dto.CommunityId.Should().Be("2OWxVjZ6MMjZzyRB");
+        dto.EnergyDirection.Should().Be("generation");
         dto.Readings.Should().HaveCount(1);
         dto.Readings[0].TotalConsumptionValue.Should().Be(120.5m);
         dto.Readings[0].GridShareValue.Should().Be(20.7m);
@@ -56,6 +58,7 @@ public sealed class MeasurementMessageDeserializationTests
 
         var dto = JsonSerializer.Deserialize<MeterReadingMessageDto>(json, JsonOptions);
         dto!.Readings.Should().HaveCount(2);
+        dto.EnergyDirection.Should().BeNull();
     }
 
     [Fact]
@@ -65,6 +68,7 @@ public sealed class MeasurementMessageDeserializationTests
         {
             MeterPointNumber = "AT001",
             CommunityId = "community-1",
+            EnergyDirection = "consumption",
             CreatedAtUtc = new DateTimeOffset(2026, 8, 30, 13, 4, 52, TimeSpan.Zero),
             Readings =
             [
@@ -81,6 +85,7 @@ public sealed class MeasurementMessageDeserializationTests
         var command = MeasurementMapper.ToCommand(dto);
 
         command.MeterPointNumber.Should().Be("AT001");
+        command.EnergyDirection.Should().Be("consumption");
         command.Measurements.Should().HaveCount(1);
         command.Measurements[0].TotalConsumption.Should().Be(1.5m);
         command.Measurements[0].Source.Should().Be("EDA");

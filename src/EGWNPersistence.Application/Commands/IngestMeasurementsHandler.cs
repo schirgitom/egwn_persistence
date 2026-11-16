@@ -32,7 +32,7 @@ public sealed class IngestMeasurementsHandler(
 
             if (meterPoint is null)
             {
-                meterPoint = MeterPoint.Create(request.MeterPointNumber);
+                meterPoint = MeterPoint.Create(request.MeterPointNumber, request.EnergyDirection);
                 await unitOfWork.MeterPoints.AddAsync(meterPoint, cancellationToken);
                 await unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -48,6 +48,9 @@ public sealed class IngestMeasurementsHandler(
             }
             else
             {
+                if (meterPoint.UpdateEnergyDirection(request.EnergyDirection))
+                    await unitOfWork.SaveChangesAsync(cancellationToken);
+
                 logger.LogDebug(
                     "Resolved existing MeterPoint {MeterPointNumber} with Id {MeterPointId}",
                     request.MeterPointNumber, meterPoint.Id);

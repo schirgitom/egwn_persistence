@@ -105,6 +105,67 @@ public sealed class IngestMeasurementsHandlerTests
     }
 
     [Fact]
+    public async Task Handle_WhenNewMeterPointHasDirection_SavesDirection()
+    {
+        _meterPointRepo.Setup(r => r.GetByMeterPointNumberAsync("AT001", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((MeterPoint?)null);
+        _uow.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .Callback(() =>
+            {
+                var mp = _meterPointRepo.Invocations
+                    .Select(x => x.Arguments.FirstOrDefault())
+                    .OfType<MeterPoint>()
+                    .Last();
+                typeof(MeterPoint).GetProperty(nameof(MeterPoint.Id))!.SetValue(mp, 1000L);
+            })
+            .Returns(Task.CompletedTask);
+        _measurementRepo.Setup(r => r.GetExistingAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<IEnumerable<DateTimeOffset>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<DateTimeOffset, MeterMeasurement>());
+
+        await _handler.Handle(BuildCommand("AT001", 1) with { EnergyDirection = "Generation" }, CancellationToken.None);
+
+        _meterPointRepo.Verify(r => r.AddAsync(
+            It.Is<MeterPoint>(mp => mp.EnergyDirection == "generation"), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_WhenExistingMeterPointReceivesDirection_PersistsItEvenForDuplicateReading()
+    {
+        var meterPoint = MeterPoint.Reconstitute(1001L, "AT002", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+        _meterPointRepo.Setup(r => r.GetByMeterPointNumberAsync("AT002", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(meterPoint);
+        var timestamp = new DateTimeOffset(2024, 1, 15, 8, 0, 0, TimeSpan.Zero);
+        var existing = MeterMeasurement.Reconstitute(
+            meterPoint.Id, "community-1", timestamp, 1.234m, 0.5m, 0.734m,
+            0.4053m, 0.5947m, "EDA", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+        _measurementRepo.Setup(r => r.GetExistingAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<IEnumerable<DateTimeOffset>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<DateTimeOffset, MeterMeasurement> { [timestamp] = existing });
+
+        var result = await _handler.Handle(BuildCommand("AT002", 1) with { EnergyDirection = " consumption " }, CancellationToken.None);
+        await _handler.Handle(BuildCommand("AT002", 1), CancellationToken.None);
+
+        result.Inserted.Should().Be(0);
+        meterPoint.EnergyDirection.Should().Be("consumption");
+        _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _measurementRepo.Verify(r => r.BulkInsertAsync(It.IsAny<IEnumerable<MeterMeasurement>>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_WhenExistingMeterPointDirectionChanges_PersistsNewDirection()
+    {
+        var meterPoint = MeterPoint.Reconstitute(1001L, "AT002", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "consumption");
+        _meterPointRepo.Setup(r => r.GetByMeterPointNumberAsync("AT002", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(meterPoint);
+        _measurementRepo.Setup(r => r.GetExistingAsync(It.IsAny<long>(), It.IsAny<string>(), It.IsAny<IEnumerable<DateTimeOffset>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<DateTimeOffset, MeterMeasurement>());
+
+        await _handler.Handle(BuildCommand("AT002", 1) with { EnergyDirection = "generation" }, CancellationToken.None);
+
+        meterPoint.EnergyDirection.Should().Be("generation");
+        _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task Handle_WhenMeterPointIsInAnotherCommunity_IngestsSeparateCommunityMeasurement()
     {
         var meterPoint = MeterPoint.Reconstitute(1006L, "AT006", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);

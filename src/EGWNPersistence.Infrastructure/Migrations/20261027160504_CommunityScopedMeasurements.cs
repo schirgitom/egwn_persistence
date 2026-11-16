@@ -13,6 +13,16 @@ namespace EGWNPersistence.Infrastructure.Migrations
         {
             migrationBuilder.Sql(
                 """
+                CREATE EXTENSION IF NOT EXISTS timescaledb;
+
+                SELECT create_hypertable(
+                    'raw_measurements',
+                    'timestamp',
+                    chunk_time_interval => INTERVAL '1 week',
+                    if_not_exists => TRUE,
+                    migrate_data => TRUE
+                );
+
                 DO $$
                 DECLARE chunk RECORD;
                 BEGIN

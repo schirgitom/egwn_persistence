@@ -11,7 +11,6 @@ public sealed class MeterPointRepository(EGWNPersistenceDbContext dbContext) : I
         CancellationToken cancellationToken = default)
     {
         return await dbContext.MeterPoints
-            .AsNoTracking()
             .SingleOrDefaultAsync(x => x.MeterPointNumber == meterPointNumber, cancellationToken);
     }
 

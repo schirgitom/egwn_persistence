@@ -18,6 +18,12 @@ public sealed class IngestMeasurementsCommandValidator : AbstractValidator<Comma
             .MaximumLength(100)
             .WithMessage("MeterPointNumber must not exceed 100 characters.");
 
+        RuleFor(x => x.EnergyDirection)
+            .Must(direction => direction is null ||
+                direction.Trim().Equals("consumption", StringComparison.OrdinalIgnoreCase) ||
+                direction.Trim().Equals("generation", StringComparison.OrdinalIgnoreCase))
+            .WithMessage("EnergyDirection must be 'consumption' or 'generation' when provided.");
+
         RuleFor(x => x.Measurements)
             .NotEmpty()
             .WithMessage("At least one measurement must be provided.");

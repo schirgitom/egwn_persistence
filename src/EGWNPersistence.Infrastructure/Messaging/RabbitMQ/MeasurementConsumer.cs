@@ -54,6 +54,9 @@ public sealed class MeasurementConsumer : BackgroundService
             AutomaticRecoveryEnabled = true
         };
 
+        _logger.LogInformation(
+            "Connecting measurement consumer to RabbitMQ at {Host}:{Port} (virtual host {VirtualHost})",
+            _options.Host, _options.Port, _options.VirtualHost);
         _connection = await factory.CreateConnectionAsync("egwn-persistence", cancellationToken);
         _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
 
@@ -113,8 +116,8 @@ public sealed class MeasurementConsumer : BackgroundService
             cancellationToken: cancellationToken);
 
         _logger.LogInformation(
-            "RabbitMQ consumer started. Queue '{Queue}' bound to exchange '{Exchange}' ({ExchangeType}) with routing key '{RoutingKey}' at {Host}:{Port}",
-            _queue.QueueName, _options.Exchange, _options.ExchangeType, _queue.RoutingKey, _options.Host, _options.Port);
+            "RabbitMQ consumer started. Queue '{Queue}' bound to exchange '{Exchange}' ({ExchangeType}) with routing key '{RoutingKey}' at {Host}:{Port} (virtual host {VirtualHost})",
+            _queue.QueueName, _options.Exchange, _options.ExchangeType, _queue.RoutingKey, _options.Host, _options.Port, _options.VirtualHost);
     }
 
     private async Task HandleMessageAsync(object sender, BasicDeliverEventArgs args)

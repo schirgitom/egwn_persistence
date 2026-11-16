@@ -8,7 +8,8 @@ namespace EGWNPersistence.Application.Commands;
 public sealed record IngestMeasurementsCommand(
     string CommunityId,
     string MeterPointNumber,
-    IReadOnlyList<MeasurementEntry> Measurements) : IRequest<IngestMeasurementsResult>;
+    IReadOnlyList<MeasurementEntry> Measurements,
+    string? EnergyDirection = null) : IRequest<IngestMeasurementsResult>;
 
 public sealed record MeasurementEntry(
     DateTimeOffset Timestamp,

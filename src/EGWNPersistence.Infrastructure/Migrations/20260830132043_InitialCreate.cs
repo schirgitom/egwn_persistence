@@ -12,6 +12,8 @@ namespace EGWNPersistence.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("CREATE EXTENSION IF NOT EXISTS timescaledb;");
+
             migrationBuilder.CreateTable(
                 name: "kpi_measurements",
                 columns: table => new
@@ -68,6 +70,17 @@ namespace EGWNPersistence.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_raw_measurements", x => new { x.meter_id, x.timestamp });
                 });
+
+            migrationBuilder.Sql(
+                """
+                SELECT create_hypertable(
+                    'raw_measurements',
+                    'timestamp',
+                    chunk_time_interval => INTERVAL '1 week',
+                    if_not_exists => TRUE,
+                    migrate_data => TRUE
+                );
+                """);
 
             migrationBuilder.CreateIndex(
                 name: "IX_kpi_measurements_meter_id_timestamp",

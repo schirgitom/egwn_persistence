@@ -34,6 +34,11 @@ namespace EGWNPersistence.Infrastructure.Migrations
                         .HasColumnType("timestamptz")
                         .HasColumnName("created_at");
 
+                    b.Property<string>("EnergyDirection")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("energy_direction");
+
                     b.Property<string>("MeterPointNumber")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -49,7 +54,10 @@ namespace EGWNPersistence.Infrastructure.Migrations
                     b.HasIndex("MeterPointNumber")
                         .IsUnique();
 
-                    b.ToTable("meter_points", (string)null);
+                    b.ToTable("meter_points", (string)null, t =>
+                        {
+                            t.HasCheckConstraint("ck_meter_points_energy_direction", "energy_direction IN ('consumption', 'generation')");
+                        });
                 });
 
             modelBuilder.Entity("EGWNPersistence.Domain.Entities.KpiMeasurement", b =>

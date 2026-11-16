@@ -18,7 +18,9 @@ public sealed class EGWNPersistenceDbContext(DbContextOptions<EGWNPersistenceDbC
 
         modelBuilder.Entity<MeterPoint>(entity =>
         {
-            entity.ToTable("meter_points");
+            entity.ToTable("meter_points", table =>
+                table.HasCheckConstraint("ck_meter_points_energy_direction",
+                    "energy_direction IN ('consumption', 'generation')"));
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Id)
                 .ValueGeneratedOnAdd();
@@ -26,6 +28,9 @@ public sealed class EGWNPersistenceDbContext(DbContextOptions<EGWNPersistenceDbC
                 .HasColumnName("meter_point_number")
                 .HasMaxLength(100)
                 .IsRequired();
+            entity.Property(x => x.EnergyDirection)
+                .HasColumnName("energy_direction")
+                .HasMaxLength(20);
             entity.HasIndex(x => x.MeterPointNumber)
                 .IsUnique();
             entity.Property(x => x.CreatedAt)

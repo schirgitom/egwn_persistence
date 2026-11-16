@@ -27,6 +27,14 @@ Grafana benötigt Leserechte auf `meter_points`, `meter_point_communities`,
 `raw_measurements` sowie auf `EnergyCommunities`, `MeteringPoints`,
 `Customers` und `CustomerMeteringPoints` in der CentralAPI-Datenbank.
 
+Der Messwert-Producer kann im RabbitMQ-Payload zusätzlich auf oberster Ebene
+`energyDirection` mit `consumption` oder `generation` senden. Das Feld
+`meter_points.energy_direction` ist nullable; bei bestehenden Zählpunkten
+wird es bei jedem gelieferten Wert aktualisiert, auch wenn der Messwert
+bereits vorhanden ist. Fehlt das Feld, bleibt der gespeicherte Wert unverändert.
+Die hier versionierten Zählpunkt-Dashboards verwenden weiterhin
+`MeteringPoints.EnergyDirection` aus CentralAPI zur Richtungsfilterung.
+
 Die Persistence speichert **Stundenwerte**, keine Viertelstundenwerte.
 Stündliche kWh entsprechen der durchschnittlichen Leistung in kW innerhalb
 dieser Stunde. Tagesprofile und Vollständigkeit benutzen Wiener Ortszeit;

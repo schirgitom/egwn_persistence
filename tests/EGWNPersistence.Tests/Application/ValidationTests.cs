@@ -21,6 +21,24 @@ public sealed class ValidationTests
     }
 
     [Theory]
+    [InlineData("consumption")]
+    [InlineData(" GENERATION ")]
+    public void Validate_ValidEnergyDirection_Passes(string direction)
+    {
+        var result = _validator.Validate(new IngestMeasurementsCommand("community-1", "AT001", [ValidEntry()], direction));
+        result.IsValid.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("export")]
+    public void Validate_InvalidEnergyDirection_Fails(string direction)
+    {
+        var result = _validator.Validate(new IngestMeasurementsCommand("community-1", "AT001", [ValidEntry()], direction));
+        result.Errors.Should().Contain(e => e.PropertyName == "EnergyDirection");
+    }
+
+    [Theory]
     [InlineData("")]
     [InlineData("   ")]
     [InlineData(null)]

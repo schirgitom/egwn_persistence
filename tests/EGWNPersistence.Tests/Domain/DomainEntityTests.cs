@@ -13,6 +13,7 @@ public sealed class MeterPointTests
 
         mp.Id.Should().Be(0);
         mp.MeterPointNumber.Should().Be("AT001234567890");
+        mp.EnergyDirection.Should().BeNull();
         mp.CreatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
         mp.UpdatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
     }
@@ -35,16 +36,40 @@ public sealed class MeterPointTests
     }
 
     [Fact]
+    public void UpdateEnergyDirection_UpdatesOnlyWhenProvidedAndChanged()
+    {
+        var mp = MeterPoint.Create("AT001");
+        mp.UpdateEnergyDirection(" Generation ").Should().BeTrue();
+        mp.EnergyDirection.Should().Be("generation");
+        var updatedAt = mp.UpdatedAt;
+        mp.UpdateEnergyDirection(null).Should().BeFalse();
+        mp.UpdateEnergyDirection("generation").Should().BeFalse();
+        mp.EnergyDirection.Should().Be("generation");
+        mp.UpdatedAt.Should().Be(updatedAt);
+        mp.UpdateEnergyDirection("consumption").Should().BeTrue();
+        mp.EnergyDirection.Should().Be("consumption");
+    }
+
+    [Fact]
+    public void UpdateEnergyDirection_WithInvalidValue_Throws()
+    {
+        var mp = MeterPoint.Create("AT001");
+        var act = () => mp.UpdateEnergyDirection("unknown");
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
     public void Reconstitute_RestoresAllProperties()
     {
         const long id = 42L;
         var created = DateTimeOffset.UtcNow.AddDays(-10);
         var updated = DateTimeOffset.UtcNow.AddDays(-5);
 
-        var mp = MeterPoint.Reconstitute(id, "AT002", created, updated);
+        var mp = MeterPoint.Reconstitute(id, "AT002", created, updated, "generation");
 
         mp.Id.Should().Be(id);
         mp.MeterPointNumber.Should().Be("AT002");
+        mp.EnergyDirection.Should().Be("generation");
         mp.CreatedAt.Should().Be(created);
         mp.UpdatedAt.Should().Be(updated);
     }
