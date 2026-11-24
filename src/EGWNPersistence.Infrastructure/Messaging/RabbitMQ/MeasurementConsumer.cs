@@ -125,6 +125,7 @@ public sealed class MeasurementConsumer : BackgroundService
         var deliveryTag = args.DeliveryTag;
         string? meterPointNumber = null;
         string? communityId = null;
+        string? energyDirection = null;
 
         try
         {
@@ -143,9 +144,10 @@ public sealed class MeasurementConsumer : BackgroundService
 
             meterPointNumber = dto.MeterPointNumber;
             communityId = dto.CommunityId;
+            energyDirection = dto.EnergyDirection;
             _logger.LogDebug(
-                "Received measurement message for {MeterPointNumber} in community {CommunityId} with {Count} entries",
-                meterPointNumber, communityId, dto.Readings.Count);
+                "Received measurement message for {MeterPointNumber} in community {CommunityId} with energy direction {EnergyDirection} and {Count} entries",
+                meterPointNumber, communityId, energyDirection, dto.Readings.Count);
 
             var command = MeasurementMapper.ToCommand(dto);
 
@@ -154,16 +156,16 @@ public sealed class MeasurementConsumer : BackgroundService
             var result = await mediator.Send(command);
 
             _logger.LogInformation(
-                "Message processed for {MeterPointNumber} in community {CommunityId}: {Inserted} inserted, {Skipped} skipped",
-                meterPointNumber, communityId, result.Inserted, result.Skipped);
+                "Message processed for {MeterPointNumber} in community {CommunityId} with incoming energy direction {EnergyDirection}: {Inserted} inserted, {Skipped} skipped",
+                meterPointNumber, communityId, energyDirection, result.Inserted, result.Skipped);
 
             await _channel!.BasicAckAsync(deliveryTag, multiple: false);
         }
         catch (ValidationException ex)
         {
             _logger.LogWarning(ex,
-                "Validation failed for message (MeterPoint: {MeterPointNumber}, community: {CommunityId}). Dead-lettering.",
-                meterPointNumber, communityId);
+                "Validation failed for message (MeterPoint: {MeterPointNumber}, community: {CommunityId}, energy direction: {EnergyDirection}). Dead-lettering.",
+                meterPointNumber, communityId, energyDirection);
             // Validation failures are unrecoverable — send to DLQ
             await _channel!.BasicNackAsync(deliveryTag, multiple: false, requeue: false);
         }
@@ -175,8 +177,8 @@ public sealed class MeasurementConsumer : BackgroundService
         catch (Exception ex)
         {
             _logger.LogError(ex,
-                "Unexpected error processing message for {MeterPointNumber} in community {CommunityId}. Requeueing.",
-                meterPointNumber, communityId);
+                "Unexpected error processing message for {MeterPointNumber} in community {CommunityId} with energy direction {EnergyDirection}. Requeueing.",
+                meterPointNumber, communityId, energyDirection);
             // Transient failures (DB down, etc.) — requeue for retry
             await _channel!.BasicNackAsync(deliveryTag, multiple: false, requeue: true);
         }

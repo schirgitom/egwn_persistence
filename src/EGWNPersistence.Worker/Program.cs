@@ -3,6 +3,7 @@ using EGWNPersistence.Infrastructure;
 using EGWNPersistence.Infrastructure.Configuration;
 using EGWNPersistence.Infrastructure.Persistence;
 using EGWNPersistence.Worker.Configuration;
+using EGWNPersistence.Worker.Provisioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using RabbitMQ.Client;
@@ -48,6 +49,7 @@ try
     // Application + Infrastructure layers
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
+    builder.Services.AddHostedService<ProvisioningApiHostedService>();
 
     // Health checks
     var dbConnStr = builder.Configuration["Database:ConnectionString"]
@@ -95,6 +97,7 @@ try
 catch (Exception ex) when (ex is not HostAbortedException)
 {
     Log.Fatal(ex, "Host terminated unexpectedly");
+    Environment.ExitCode = 1;
 }
 finally
 {

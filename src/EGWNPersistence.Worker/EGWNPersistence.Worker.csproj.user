@@ -3,5 +3,6 @@
   <PropertyGroup>
     <ActiveDebugProfile>Container (Dockerfile)</ActiveDebugProfile>
     <_LastSelectedProfileId>D:\Entwicklung\Projekte\EGWN\egwn_persistence\src\EGWNPersistence.Worker\Properties\PublishProfiles\registry.hub.docker.com_thomasschirgi.pubxml</_LastSelectedProfileId>
+    <NameOfLastUsedPublishProfile>D:\Entwicklung\Projekte\EGWN\egwn_persistence\src\EGWNPersistence.Worker\Properties\PublishProfiles\registry.hub.docker.com_thomasschirgi1.pubxml</NameOfLastUsedPublishProfile>
   </PropertyGroup>
 </Project>

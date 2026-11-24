@@ -133,14 +133,15 @@ public sealed class IngestMeasurementsHandler(
                 request.Measurements.Count - newMeasurements.Count);
 
             logger.LogInformation(
-                "Ingested measurements for {MeterPointNumber}: {Inserted} inserted, {Corrected} corrected, {Skipped} skipped",
-                request.MeterPointNumber, result.Inserted, correctedMeasurements.Count, result.Skipped);
+                "Ingested measurements for {MeterPointNumber} with stored energy direction {EnergyDirection}: {Inserted} inserted, {Corrected} corrected, {Skipped} skipped",
+                request.MeterPointNumber, meterPoint.EnergyDirection, result.Inserted, correctedMeasurements.Count, result.Skipped);
 
             return result;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to ingest measurements for {MeterPointNumber}", request.MeterPointNumber);
+            logger.LogError(ex, "Failed to ingest measurements for {MeterPointNumber} with incoming energy direction {EnergyDirection}",
+                request.MeterPointNumber, request.EnergyDirection);
             await unitOfWork.RollbackAsync(cancellationToken);
             throw;
         }
